@@ -370,10 +370,11 @@
         bindDrag(el, c.id);
       }
 
-      el.addEventListener("click", () => {
-        if(dragState && dragState.moved) return;
-        onCityClick(c.id);
-      });
+   el.addEventListener("click", () => {
+  if (isLayoutEdit()) return;
+  if (dragState && dragState.moved) return;
+  onCityClick(c.id);
+});
 
       frag.appendChild(el);
     }
@@ -416,82 +417,96 @@
     return cities.map(c=>c.id).filter(id=>!eliminated.has(id));
   }
 
-  function bindDrag(el, cityId){
-    el.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+ function bindDrag(el, cityId){
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      const current = liveManualLayouts[cityId] || { dx: 0, dy: 0 };
+    const node = currentNodeMap.get(cityId);
+    if (!node) return;
 
-      dragState = {
-        cityId,
-        startX: e.clientX,
-        startY: e.clientY,
-        startDx: current.dx,
-        startDy: current.dy,
-        moved: false,
-        el
-      };
+    const current = liveManualLayouts[cityId] || { dx: 0, dy: 0 };
 
-      el.classList.add("dragging");
-      if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
-    });
-
-    el.addEventListener("pointermove", (e) => {
-      if(!dragState || dragState.cityId !== cityId) return;
-
-      const deltaX = e.clientX - dragState.startX;
-      const deltaY = e.clientY - dragState.startY;
-
-      if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2){
-        dragState.moved = true;
-      }
-
-      liveManualLayouts[cityId] = {
-        dx: Math.round(dragState.startDx + deltaX),
-        dy: Math.round(dragState.startDy + deltaY)
-      };
-
-      renderCities();
-    });
-
-    const finishDrag = () => {
-      if(!dragState || dragState.cityId !== cityId) return;
-      if(dragState.el) dragState.el.classList.remove("dragging");
-      dragState = null;
-      updateLayoutEditor();
+    dragState = {
+      cityId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startDx: current.dx,
+      startDy: current.dy,
+      autoDx: node.autoDx || 0,
+      autoDy: node.autoDy || 0,
+      moved: false,
+      el
     };
 
-    el.addEventListener("pointerup", finishDrag);
-    el.addEventListener("pointercancel", finishDrag);
+    el.classList.add("dragging");
+    el.style.transition = "none";
+    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+  });
+
+  el.addEventListener("pointermove", (e) => {
+    if (!dragState || dragState.cityId !== cityId) return;
+
+    const deltaX = e.clientX - dragState.startX;
+    const deltaY = e.clientY - dragState.startY;
+
+    if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+      dragState.moved = true;
+    }
+
+    const newDx = Math.round(dragState.startDx + deltaX);
+    const newDy = Math.round(dragState.startDy + deltaY);
+
+    liveManualLayouts[cityId] = {
+      dx: newDx,
+      dy: newDy
+    };
+
+    const finalDx = dragState.autoDx + newDx;
+    const finalDy = dragState.autoDy + newDy;
+
+    el.style.transform = `translate(-50%, -50%) translate(${finalDx}px, ${finalDy}px)`;
+  });
+
+  const finishDrag = () => {
+    if (!dragState || dragState.cityId !== cityId) return;
+
+    dragState.el.classList.remove("dragging");
+    dragState.el.style.transition = "";
+    dragState = null;
+
+    updateLayoutEditor();
+  };
+
+  el.addEventListener("pointerup", finishDrag);
+  el.addEventListener("pointercancel", finishDrag);
+}
+
+function onCityClick(id){
+  if(isLayoutEdit()) return;
+
+  if(step === STEP.PICK){
+    if(picked.has(id)) picked.delete(id);
+    else picked.add(id);
+    applyCityClasses();
+    return;
   }
 
-  function onCityClick(id){
-    if(isLayoutEdit()) return;
+  if(step === STEP.GUESS){
+    if(eliminated.has(id)) return;
+    if(!answerId) return;
 
-    if(step===STEP.PICK){
-      if(picked.has(id)) picked.delete(id);
-      else picked.add(id);
+    if(id === answerId){
+      step = STEP.END;
+      toast("✅ 성공!", "하나님이 계획하신 도시를 찾았어요!");
+      renderUI();
+    }else{
+      eliminated.add(id);
+      toast("❌ 막힌 길!", "틀렸어요. 힌트로 다시 좁혀보자!");
       applyCityClasses();
-      return;
-    }
-
-    if(step===STEP.GUESS){
-      if(eliminated.has(id)) return;
-      if(!answerId) return;
-
-      if(id===answerId){
-        step = STEP.END;
-        toast("✅ 성공!", "하나님이 계획하신 도시를 찾았어요!");
-        renderUI();
-      }else{
-        eliminated.add(id);
-        toast("❌ 막힌 길!", "틀렸어요. 힌트로 다시 좁혀보자!");
-        applyCityClasses();
-      }
     }
   }
-
+}
   function setupHints(){
     const ans = getCityById(answerId);
     usedContinent = false;
