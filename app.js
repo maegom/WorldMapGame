@@ -75,58 +75,228 @@
     {id:"AUCKLAND",ko:"오클랜드",en:"Auckland",country:"뉴질랜드",continent:"OCEANIA",lat:-36.8485,lon:174.7633,koInitials:"ㅇㅋㄹㄷ"}
   ];
 
-  const MANUAL_LAYOUTS = {
-    CASABLANCA: { dx: -39, dy: 282 },
-    HAVANA: { dx: 49, dy: 283 },
-    LIMA: { dx: 3, dy: 166 },
-    SANTIAGO: { dx: 3, dy: 119 },
-    BUENOS_AIRES: { dx: 10, dy: 148 },
-    SAO_PAULO: { dx: -11, dy: 82 },
-    RIO_DE_JANEIRO: { dx: -16, dy: 54 },
-    LOS_ANGELES: { dx: 50, dy: 188 },
-    SAN_FRANCISCO: { dx: 62, dy: 173 },
-    CHICAGO: { dx: 56, dy: 260 },
-    NEW_YORK: { dx: 56, dy: 205 },
-    TORONTO: { dx: -14, dy: 181 },
-    LAGOS: { dx: -33, dy: 230 },
-    CAPE_TOWN: { dx: -30, dy: 142 },
-    JOHANNESBURG: { dx: -44, dy: 157 },
-    NAIROBI: { dx: -74, dy: 207 },
-    CAIRO: { dx: -75, dy: 280 },
-    VENICE: { dx: -14, dy: 294 },
-    ZURICH: { dx: -18, dy: 250 },
-    ATHENS: { dx: -41, dy: 276 },
-    DUBAI: { dx: -102, dy: 284 },
-    VIENNA: { dx: 70, dy: 275 },
-    ROME: { dx: 117, dy: 269 },
-    BARCELONA: { dx: -109, dy: 263 },
-    MADRID: { dx: -69, dy: 225 },
-    LONDON: { dx: -103, dy: 226 },
-    PARIS: { dx: -82, dy: 245 },
-    OSLO: { dx: -84, dy: 217 },
-    BERLIN: { dx: -30, dy: 233 },
-    AMSTERDAM: { dx: 66, dy: 196 },
-    HELSINKI: { dx: -45, dy: 185 },
-    STOCKHOLM: { dx: -113, dy: 144 },
-    ISTANBUL: { dx: 73, dy: 309 },
-    MELBOURNE: { dx: -324, dy: 77 },
-    SYDNEY: { dx: -228, dy: 92 },
-    AUCKLAND: { dx: -243, dy: 144 },
-    JAKARTA: { dx: -89, dy: 193 },
-    SINGAPORE: { dx: -203, dy: 223 },
-    KUALA_LUMPUR: { dx: -194, dy: 199 },
-    BANGKOK: { dx: -199, dy: 225 },
-    HO_CHI_MINH_CITY: { dx: -103, dy: 215 },
-    HANOI: { dx: -107, dy: 251 },
-    HONG_KONG: { dx: -227, dy: 226 },
-    MANILA: { dx: -135, dy: 301 },
-    TAIPEI: { dx: -137, dy: 245 },
-    SHANGHAI: { dx: -242, dy: 241 },
-    BEIJING: { dx: -196, dy: 255 },
-    SEOUL: { dx: -158, dy: 271 },
-    BUSAN: { dx: -118, dy: 285 },
-    TOKYO: { dx: -105, dy: 252 }
-  };
+  const MANUAL_LAYOUTS ={
+  "AMSTERDAM": {
+    "dx": 2,
+    "dy": 239
+  },
+  "ATHENS": {
+    "dx": -101,
+    "dy": 245
+  },
+  "AUCKLAND": {
+    "dx": -161,
+    "dy": 137
+  },
+  "BANGKOK": {
+    "dx": -199,
+    "dy": 225
+  },
+  "BARCELONA": {
+    "dx": -112,
+    "dy": 271
+  },
+  "BEIJING": {
+    "dx": -196,
+    "dy": 255
+  },
+  "BERLIN": {
+    "dx": -22,
+    "dy": 266
+  },
+  "BUENOS_AIRES": {
+    "dx": 10,
+    "dy": 148
+  },
+  "BUSAN": {
+    "dx": -132,
+    "dy": 235
+  },
+  "CAIRO": {
+    "dx": -96,
+    "dy": 268
+  },
+  "CAPE_TOWN": {
+    "dx": -3,
+    "dy": 152
+  },
+  "CASABLANCA": {
+    "dx": -39,
+    "dy": 282
+  },
+  "CHICAGO": {
+    "dx": 64,
+    "dy": 347
+  },
+  "DUBAI": {
+    "dx": -120,
+    "dy": 295
+  },
+  "HANOI": {
+    "dx": -79,
+    "dy": 261
+  },
+  "HAVANA": {
+    "dx": 62,
+    "dy": 264
+  },
+  "HELSINKI": {
+    "dx": -36,
+    "dy": 195
+  },
+  "HONG_KONG": {
+    "dx": -189,
+    "dy": 228
+  },
+  "HO_CHI_MINH_CITY": {
+    "dx": -103,
+    "dy": 215
+  },
+  "ISTANBUL": {
+    "dx": 59,
+    "dy": 323
+  },
+  "JAKARTA": {
+    "dx": -89,
+    "dy": 193
+  },
+  "JOHANNESBURG": {
+    "dx": -23,
+    "dy": 164
+  },
+  "KUALA_LUMPUR": {
+    "dx": -184,
+    "dy": 217
+  },
+  "LAGOS": {
+    "dx": -8,
+    "dy": 235
+  },
+  "LIMA": {
+    "dx": 3,
+    "dy": 166
+  },
+  "LONDON": {
+    "dx": -103,
+    "dy": 226
+  },
+  "LOS_ANGELES": {
+    "dx": 74,
+    "dy": 247
+  },
+  "MADRID": {
+    "dx": -66,
+    "dy": 239
+  },
+  "MANILA": {
+    "dx": -135,
+    "dy": 301
+  },
+  "MELBOURNE": {
+    "dx": -300,
+    "dy": 73
+  },
+  "MEXICO_CITY": {
+    "dx": -27,
+    "dy": 22
+  },
+  "MUMBAI": {
+    "dx": -87,
+    "dy": 202
+  },
+  "NAIROBI": {
+    "dx": -71,
+    "dy": 212
+  },
+  "NEW_YORK": {
+    "dx": 56,
+    "dy": 205
+  },
+  "OSAKA": {
+    "dx": -124,
+    "dy": 244
+  },
+  "OSLO": {
+    "dx": -74,
+    "dy": 231
+  },
+  "PARIS": {
+    "dx": -79,
+    "dy": 260
+  },
+  "PRAGUE": {
+    "dx": 2,
+    "dy": 41
+  },
+  "RIO_DE_JANEIRO": {
+    "dx": -18,
+    "dy": 111
+  },
+  "ROME": {
+    "dx": 75,
+    "dy": 302
+  },
+  "SANTIAGO": {
+    "dx": -8,
+    "dy": 122
+  },
+  "SAN_FRANCISCO": {
+    "dx": 57,
+    "dy": 230
+  },
+  "SAO_PAULO": {
+    "dx": 1,
+    "dy": 109
+  },
+  "SEOUL": {
+    "dx": -153,
+    "dy": 255
+  },
+  "SHANGHAI": {
+    "dx": -242,
+    "dy": 241
+  },
+  "SINGAPORE": {
+    "dx": -203,
+    "dy": 223
+  },
+  "STOCKHOLM": {
+    "dx": -110,
+    "dy": 208
+  },
+  "SYDNEY": {
+    "dx": -228,
+    "dy": 92
+  },
+  "TAIPEI": {
+    "dx": -210,
+    "dy": 213
+  },
+  "TOKYO": {
+    "dx": -127,
+    "dy": 232
+  },
+  "TORONTO": {
+    "dx": -25,
+    "dy": 249
+  },
+  "VANCOUVER": {
+    "dx": -52,
+    "dy": 141
+  },
+  "VENICE": {
+    "dx": -14,
+    "dy": 294
+  },
+  "VIENNA": {
+    "dx": 22,
+    "dy": 292
+  },
+  "ZURICH": {
+    "dx": -16,
+    "dy": 271
+  }
+};
 
   let liveManualLayouts = JSON.parse(JSON.stringify(MANUAL_LAYOUTS));
 
