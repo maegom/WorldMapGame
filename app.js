@@ -1,7 +1,18 @@
 (() => {
   "use strict";
-  const $ = (id) => document.getElementById(id);
 
+  const $ = (id) => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+
+  function isHost() {
+    return qs.get("role") === "host" || location.hash.includes("host");
+  }
+
+  function isLayoutEdit() {
+    return qs.get("layout") === "edit";
+  }
+
+  // ---------- 도시 데이터(50개) ----------
   const ALL_CITIES = [
     {id:"SEOUL",ko:"서울",en:"Seoul",country:"대한민국",continent:"ASIA",lat:37.5665,lon:126.9780,koInitials:"ㅅㅇ"},
     {id:"BUSAN",ko:"부산",en:"Busan",country:"대한민국",continent:"ASIA",lat:35.1796,lon:129.0756,koInitials:"ㅂㅅ"},
@@ -65,66 +76,113 @@
     {id:"AUCKLAND",ko:"오클랜드",en:"Auckland",country:"뉴질랜드",continent:"OCEANIA",lat:-36.8485,lon:174.7633,koInitials:"ㅇㅋㄹㄷ"}
   ];
 
-  const STEP = { SETUP:0, PICK:1, ELIM:2, GUESS:3, END:4 };
-  const STORAGE_KEY = "macedonia-game-manual-layouts-v1";
+  // ---------- 수동 보정값 ----------
+  const MANUAL_LAYOUTS = {
+    SEOUL: { dx: -10, dy: -18 },
+    BUSAN: { dx: 8, dy: 18 },
+    TOKYO: { dx: 18, dy: -8 },
+    OSAKA: { dx: 20, dy: 14 },
+    BEIJING: { dx: -18, dy: -8 },
+    SHANGHAI: { dx: -10, dy: 14 },
+    HONG_KONG: { dx: 14, dy: 18 },
+    TAIPEI: { dx: 18, dy: 4 },
 
-  const CONTINENT_KO = {
-    ASIA: "아시아",
-    EUROPE: "유럽",
-    AMERICAS: "아메리카",
-    AFRICA: "아프리카",
-    OCEANIA: "오세아니아"
+    LONDON: { dx: -22, dy: -10 },
+    PARIS: { dx: 18, dy: 10 },
+    BERLIN: { dx: 22, dy: -8 },
+    AMSTERDAM: { dx: -16, dy: -18 },
+    PRAGUE: { dx: 16, dy: 16 },
+    VIENNA: { dx: 24, dy: 10 },
+    ZURICH: { dx: -18, dy: 14 },
+    ROME: { dx: 6, dy: 22 },
+    VENICE: { dx: 18, dy: 4 },
+    ATHENS: { dx: 20, dy: 14 },
+    ISTANBUL: { dx: 26, dy: -2 },
+
+    NEW_YORK: { dx: 14, dy: -10 },
+    TORONTO: { dx: -18, dy: -16 },
+    CHICAGO: { dx: -10, dy: 18 }
   };
 
-  // 필요하면 여기에 고정 미세조정값을 넣으세요.
-  // 예: { "LONDON": { dx: -8, dy: -20 } }
-  const MANUAL_LAYOUTS = {};
+  // 편집 모드에서 덮어쓰기될 수동값
+  let liveManualLayouts = structuredClone(MANUAL_LAYOUTS);
 
-  function shuffle(arr){
+  // ---------- helpers ----------
+  function shuffle(arr) {
     const a = arr.slice();
-    for(let i=a.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [a[i],a[j]] = [a[j],a[i]];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
   }
-  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-  function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
 
-  function lonLatToXY(lon, lat){
-    const x = (lon + 180) / 360;
-    const y = (90 - lat) / 180;
-    return {x, y};
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  function toast(main, sub=""){
+  function lonLatToXY(lon, lat) {
+    const x = (lon + 180) / 360;
+    const y = (90 - lat) / 180;
+    return { x, y };
+  }
+
+  function toast(main, sub = "") {
     const t = $("toast");
     t.innerHTML = `${main}<span class="sub">${sub}</span>`;
     t.classList.add("show");
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(()=>t.classList.remove("show"), 1700);
+    setTimeout(() => t.classList.remove("show"), 1700);
   }
 
-  function getParams(){ return new URLSearchParams(location.search); }
-  function isHost(){ return getParams().get("role") === "host" || location.hash.includes("host"); }
-  function isLayoutEdit(){ return getParams().get("layout") === "edit"; }
+  function getCityById(id) {
+    return cities.find(c => c.id === id);
+  }
 
+  function labelWidthPx(city) {
+    return Math.max(72, city.ko.length * 14 + city.country.length * 7 + 34);
+  }
+
+  function labelHeightPx() {
+    return 34;
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function prettyLayoutJSON() {
+    const filtered = {};
+    Object.keys(liveManualLayouts)
+      .sort()
+      .forEach(key => {
+        const dx = Math.round(liveManualLayouts[key].dx || 0);
+        const dy = Math.round(liveManualLayouts[key].dy || 0);
+        if (dx !== 0 || dy !== 0) filtered[key] = { dx, dy };
+      });
+    return JSON.stringify(filtered, null, 2);
+  }
+
+  // ---------- state ----------
+  const STEP = { SETUP: 0, PICK: 1, ELIM: 2, GUESS: 3, END: 4 };
   let step = STEP.SETUP;
+
   let cities = [];
   let picked = new Set();
   let eliminated = new Set();
   let answerId = null;
 
+  // 힌트
   let usedContinent = false;
   let hintLetters = [];
   let hintInitials = [];
   let shownLetters = [];
   let shownInitials = [];
 
-  let cityLayouts = new Map();
-  let manualLayouts = loadManualLayouts();
+  // 드래그용
+  let currentNodeMap = new Map();
   let dragState = null;
 
+  // ---------- refs ----------
   const citiesLayer = $("citiesLayer");
   const stepBadge = $("stepBadge");
   const panelBody = $("panelBody");
@@ -132,281 +190,273 @@
   const remainCount = $("remainCount");
   const pickCount = $("pickCount");
   const resetBtn = $("resetBtn");
-  const stage = $("stage");
   const hostBox = $("hostBox");
   const hostAnswer = $("hostAnswer");
-  const manualBox = $("manualBox");
-  const manualOutput = $("manualOutput");
+  const layoutEditorSection = $("layoutEditorSection");
+  const layoutJson = $("layoutJson");
+  const copyLayoutBtn = $("copyLayoutBtn");
+  const resetLayoutBtn = $("resetLayoutBtn");
 
   resetBtn.addEventListener("click", resetAll);
-  window.addEventListener("resize", rerenderCurrentLayout);
-  window.addEventListener("hashchange", () => { updateHostBox(); updateManualBox(); });
-  window.addEventListener("popstate", () => { updateHostBox(); updateManualBox(); });
 
-  $("btnCopyLayout")?.addEventListener("click", async () => {
-    try{
-      await navigator.clipboard.writeText(manualOutput.value);
-      toast("복사 완료", "수동 위치 JSON이 복사됐어요.");
-    }catch{
-      toast("복사 실패", "직접 선택해서 복사해 주세요.");
+  copyLayoutBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(prettyLayoutJSON());
+      toast("복사 완료!", "수동 위치 JSON이 복사됐어요.");
+    } catch {
+      toast("복사 실패", "직접 복사해주세요.");
     }
   });
 
-  $("btnResetLayout")?.addEventListener("click", () => {
-    if(!confirm("수동 위치 조정값을 모두 초기화할까요?")) return;
-    manualLayouts = {};
-    localStorage.removeItem(STORAGE_KEY);
-    rerenderCurrentLayout();
-    syncManualOutput();
-    toast("초기화 완료", "수동 위치값이 지워졌어요.");
+  resetLayoutBtn.addEventListener("click", () => {
+    liveManualLayouts = {};
+    updateLayoutEditor();
+    renderCities();
+    toast("초기화 완료", "수동 위치값을 지웠어요.");
   });
 
-  function loadManualLayouts(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : {};
-      return { ...MANUAL_LAYOUTS, ...parsed };
-    }catch{
-      return { ...MANUAL_LAYOUTS };
-    }
-  }
+  // ---------- 충돌 회피 자동 배치 ----------
+  function computeSmartOffsets(nodes) {
+    const stageRect = citiesLayer.getBoundingClientRect();
+    const W = Math.max(800, stageRect.width || 1200);
+    const H = Math.max(500, stageRect.height || 700);
 
-  function saveManualLayouts(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(manualLayouts, null, 2));
-  }
-
-  function syncManualOutput(){
-    if(!manualOutput) return;
-    manualOutput.value = JSON.stringify(manualLayouts, null, 2);
-  }
-
-  function updateManualBox(){
-    if(isLayoutEdit()){
-      manualBox.classList.add("show");
-      syncManualOutput();
-    }else{
-      manualBox.classList.remove("show");
-    }
-  }
-
-  function updateHostBox(){
-    if(isHost() && answerId){
-      const ans = cities.find(c=>c.id===answerId);
-      hostBox.classList.add("show");
-      hostAnswer.innerHTML = `${ans.ko} (${ans.country})<br><span class="muted">${ans.en} · ${CONTINENT_KO[ans.continent] || ans.continent}</span>`;
-    }else{
-      hostBox.classList.remove("show");
-      hostAnswer.textContent = "-";
-    }
-  }
-
-  function cityBasePoint(city){
-    const {x, y} = lonLatToXY(city.lon, city.lat);
-    const rect = stage.getBoundingClientRect();
-    return { x: x * rect.width, y: y * rect.height };
-  }
-
-  function estimateBox(city){
-    const label = `${city.ko}(${city.country})`;
-    const width = clamp(label.length * 7.4 + 40, 78, 180);
-    return { width, height: 34 };
-  }
-
-  function overlaps(a, b, gap = 8){
-    return !(
-      a.x + a.width/2 + gap < b.x - b.width/2 ||
-      a.x - a.width/2 - gap > b.x + b.width/2 ||
-      a.y + a.height/2 + gap < b.y - b.height/2 ||
-      a.y - a.height/2 - gap > b.y + b.height/2
-    );
-  }
-
-  function computeAutoLayouts(list){
-    const rect = stage.getBoundingClientRect();
     const placed = [];
-    const result = new Map();
 
-    const nodes = list.map(city => {
-      const base = cityBasePoint(city);
-      const size = estimateBox(city);
-      return {
-        id: city.id,
-        city,
-        baseX: base.x,
-        baseY: base.y,
-        x: base.x,
-        y: base.y,
-        width: size.width,
-        height: size.height
-      };
-    }).sort((a,b) => a.baseX - b.baseX);
+    for (const n of nodes) {
+      const city = getCityById(n.id);
+      const baseX = n.x * W;
+      const baseY = n.y * H;
+      const w = labelWidthPx(city);
+      const h = labelHeightPx();
 
-    for(const node of nodes){
-      const manual = manualLayouts[node.id];
-      if(manual){
-        node.x = clamp(node.baseX + manual.dx, node.width/2 + 4, rect.width - node.width/2 - 4);
-        node.y = clamp(node.baseY + manual.dy, node.height/2 + 4, rect.height - node.height/2 - 4);
-        placed.push(node);
-        result.set(node.id, { left: node.x, top: node.y, source:"manual" });
-        continue;
+      const manual = liveManualLayouts[n.id] || { dx: 0, dy: 0 };
+
+      const candidates = [];
+      const rings = [0, 18, 28, 40, 54, 70];
+      const angles = 16;
+
+      for (const r of rings) {
+        if (r === 0) {
+          candidates.push({ dx: manual.dx, dy: manual.dy });
+        } else {
+          for (let i = 0; i < angles; i++) {
+            const a = (Math.PI * 2 * i) / angles;
+            candidates.push({
+              dx: Math.round(Math.cos(a) * r + manual.dx),
+              dy: Math.round(Math.sin(a) * r + manual.dy)
+            });
+          }
+        }
       }
 
       let best = null;
-      const radiusSteps = [0, 18, 30, 42, 58, 78, 100, 126, 154];
-      for(const r of radiusSteps){
-        const angleCount = r === 0 ? 1 : 18;
-        for(let i=0;i<angleCount;i++){
-          const angle = r === 0 ? 0 : (Math.PI * 2 * i / angleCount);
-          const testX = clamp(node.baseX + Math.cos(angle) * r, node.width/2 + 4, rect.width - node.width/2 - 4);
-          const testY = clamp(node.baseY + Math.sin(angle) * r, node.height/2 + 4, rect.height - node.height/2 - 4);
-          const candidate = { ...node, x: testX, y: testY };
-          const collisionCount = placed.reduce((acc,p) => acc + (overlaps(candidate, p) ? 1 : 0), 0);
-          const distancePenalty = Math.hypot(testX - node.baseX, testY - node.baseY);
-          const score = collisionCount * 1000 + distancePenalty;
-          if(best === null || score < best.score){
-            best = { score, x: testX, y: testY, collisionCount };
-          }
-          if(collisionCount === 0) break;
+      let bestScore = Infinity;
+
+      for (const cand of candidates) {
+        const cx = baseX + cand.dx;
+        const cy = baseY + cand.dy;
+
+        const rect = {
+          left: cx - w / 2,
+          top: cy - h / 2,
+          right: cx + w / 2,
+          bottom: cy + h / 2
+        };
+
+        let overlapArea = 0;
+        for (const p of placed) {
+          const ix = Math.max(0, Math.min(rect.right, p.rect.right) - Math.max(rect.left, p.rect.left));
+          const iy = Math.max(0, Math.min(rect.bottom, p.rect.bottom) - Math.max(rect.top, p.rect.top));
+          overlapArea += ix * iy;
         }
-        if(best && best.collisionCount === 0) break;
+
+        const outPenalty =
+          Math.max(0, 8 - rect.left) +
+          Math.max(0, rect.right - (W - 8)) +
+          Math.max(0, 8 - rect.top) +
+          Math.max(0, rect.bottom - (H - 8));
+
+        const distancePenalty = Math.abs(cand.dx - manual.dx) + Math.abs(cand.dy - manual.dy);
+        const score = overlapArea * 1000 + outPenalty * 500 + distancePenalty;
+
+        if (score < bestScore) {
+          bestScore = score;
+          best = { ...cand, rect };
+          if (score === 0) break;
+        }
       }
 
-      node.x = best ? best.x : node.baseX;
-      node.y = best ? best.y : node.baseY;
-      placed.push(node);
-      result.set(node.id, { left: node.x, top: node.y, source:"auto" });
+      n.ox = best.dx;
+      n.oy = best.dy;
+      n.w = w;
+      n.h = h;
+      n.baseX = baseX;
+      n.baseY = baseY;
+      placed.push({ id: n.id, rect: best.rect });
     }
-
-    return result;
   }
 
-  function renderCities(){
+  // ---------- 렌더 ----------
+  function renderCities() {
     citiesLayer.innerHTML = "";
-    cityLayouts = computeAutoLayouts(cities);
+    currentNodeMap = new Map();
+
+    const nodes = cities.map(c => {
+      const { x, y } = lonLatToXY(c.lon, c.lat);
+      return { id: c.id, x, y, ox: 0, oy: 0, w: 0, h: 0 };
+    });
+
+    computeSmartOffsets(nodes);
+
+    for (const n of nodes) currentNodeMap.set(n.id, n);
+
     const frag = document.createDocumentFragment();
 
-    for(const city of cities){
-      const pos = cityLayouts.get(city.id);
+    for (const c of cities) {
+      const n = currentNodeMap.get(c.id);
       const el = document.createElement("div");
       el.className = "city";
-      el.dataset.id = city.id;
-      el.style.left = `${pos.left}px`;
-      el.style.top = `${pos.top}px`;
-      el.style.transform = "translate(-50%, -50%)";
-      if(pos.source === "manual") el.classList.add("manual-adjust");
+      el.dataset.id = c.id;
+
+      el.style.left = (n.x * 100) + "%";
+      el.style.top = (n.y * 100) + "%";
+      el.style.transform = `translate(-50%, -50%) translate(${n.ox}px, ${n.oy}px)`;
 
       const dot = document.createElement("span");
       dot.className = "dot";
+
       const label = document.createElement("span");
       label.className = "label";
-      label.textContent = `${city.ko}(${city.country})`;
+      label.textContent = `${c.ko}(${c.country})`;
 
       el.appendChild(dot);
       el.appendChild(label);
-      el.addEventListener("click", () => onCityClick(city.id));
 
-      if(isLayoutEdit()) bindDrag(el, city);
+      if (isLayoutEdit()) {
+        el.classList.add("layout-edit");
+        bindDrag(el, c.id);
+      }
+
+      el.addEventListener("click", (e) => {
+        if (dragState && dragState.moved) return;
+        onCityClick(c.id);
+      });
+
       frag.appendChild(el);
     }
 
     citiesLayer.appendChild(frag);
     applyCityClasses();
-    updateManualBox();
+    updateLayoutEditor();
   }
 
-  function bindDrag(el, city){
-    el.addEventListener("pointerdown", (e) => {
-      if(!isLayoutEdit()) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const rect = stage.getBoundingClientRect();
-      const currentLeft = parseFloat(el.style.left);
-      const currentTop = parseFloat(el.style.top);
-      dragState = {
-        id: city.id,
-        city,
-        startX: e.clientX,
-        startY: e.clientY,
-        initialLeft: currentLeft,
-        initialTop: currentTop,
-        stageRect: rect,
-        element: el
-      };
-      el.classList.add("dragging");
-      el.setPointerCapture(e.pointerId);
-    });
-
-    el.addEventListener("pointermove", (e) => {
-      if(!dragState || dragState.id !== city.id) return;
-      const dx = e.clientX - dragState.startX;
-      const dy = e.clientY - dragState.startY;
-      const w = el.offsetWidth || 100;
-      const h = el.offsetHeight || 34;
-      const left = clamp(dragState.initialLeft + dx, w/2 + 4, dragState.stageRect.width - w/2 - 4);
-      const top = clamp(dragState.initialTop + dy, h/2 + 4, dragState.stageRect.height - h/2 - 4);
-      el.style.left = `${left}px`;
-      el.style.top = `${top}px`;
-    });
-
-    const finish = (e) => {
-      if(!dragState || dragState.id !== city.id) return;
-      const left = parseFloat(el.style.left);
-      const top = parseFloat(el.style.top);
-      const base = cityBasePoint(city);
-      manualLayouts[city.id] = {
-        dx: Math.round(left - base.x),
-        dy: Math.round(top - base.y)
-      };
-      saveManualLayouts();
-      syncManualOutput();
-      el.classList.remove("dragging");
-      el.classList.add("manual-adjust");
-      try { el.releasePointerCapture(e.pointerId); } catch {}
-      dragState = null;
-    };
-
-    el.addEventListener("pointerup", finish);
-    el.addEventListener("pointercancel", finish);
-  }
-
-  function rerenderCurrentLayout(){
-    if(!cities.length) return;
-    renderCities();
-  }
-
-  function applyCityClasses(){
-    for(const el of citiesLayer.querySelectorAll(".city")){
+  function applyCityClasses() {
+    for (const el of citiesLayer.querySelectorAll(".city")) {
       const id = el.dataset.id;
       el.classList.toggle("selected", picked.has(id));
       el.classList.toggle("eliminated", eliminated.has(id));
       el.classList.toggle("guessable", step === STEP.GUESS && !eliminated.has(id));
+
+      if (isLayoutEdit()) {
+        el.classList.remove("guessable");
+      }
     }
+
     remainCount.textContent = String(getRemainingIds().length);
     pickCount.textContent = String(picked.size);
-    const nextBtn = $("btnNext");
-    if(nextBtn) nextBtn.disabled = (picked.size === 0);
+
+    const nextBtn = document.getElementById("btnNext");
+    if (nextBtn) nextBtn.disabled = (picked.size === 0);
   }
 
-  function getRemainingIds(){
-    return cities.map(c=>c.id).filter(id=>!eliminated.has(id));
+  function updateLayoutEditor() {
+    if (!isLayoutEdit()) {
+      layoutEditorSection.style.display = "none";
+      return;
+    }
+    layoutEditorSection.style.display = "block";
+    layoutJson.value = prettyLayoutJSON();
   }
 
-  function onCityClick(id){
-    if(dragState) return;
-    if(step===STEP.PICK){
-      if(picked.has(id)) picked.delete(id);
+  function getRemainingIds() {
+    return cities.map(c => c.id).filter(id => !eliminated.has(id));
+  }
+
+  // ---------- 드래그 편집 ----------
+  function bindDrag(el, cityId) {
+    el.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const node = currentNodeMap.get(cityId);
+      if (!node) return;
+
+      const current = liveManualLayouts[cityId] || { dx: 0, dy: 0 };
+
+      dragState = {
+        cityId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startDx: current.dx,
+        startDy: current.dy,
+        moved: false,
+        el
+      };
+
+      el.classList.add("dragging");
+      el.setPointerCapture?.(e.pointerId);
+    });
+
+    el.addEventListener("pointermove", (e) => {
+      if (!dragState || dragState.cityId !== cityId) return;
+
+      const deltaX = e.clientX - dragState.startX;
+      const deltaY = e.clientY - dragState.startY;
+
+      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+        dragState.moved = true;
+      }
+
+      liveManualLayouts[cityId] = {
+        dx: Math.round(dragState.startDx + deltaX),
+        dy: Math.round(dragState.startDy + deltaY)
+      };
+
+      renderCities();
+    });
+
+    function finishDrag() {
+      if (!dragState || dragState.cityId !== cityId) return;
+      dragState.el.classList.remove("dragging");
+      dragState = null;
+      updateLayoutEditor();
+    }
+
+    el.addEventListener("pointerup", finishDrag);
+    el.addEventListener("pointercancel", finishDrag);
+  }
+
+  // ---------- 클릭 로직 ----------
+  function onCityClick(id) {
+    if (isLayoutEdit()) return;
+
+    if (step === STEP.PICK) {
+      if (picked.has(id)) picked.delete(id);
       else picked.add(id);
       applyCityClasses();
       return;
     }
 
-    if(step===STEP.GUESS){
-      if(eliminated.has(id) || !answerId) return;
-      if(id===answerId){
+    if (step === STEP.GUESS) {
+      if (eliminated.has(id)) return;
+      if (!answerId) return;
+
+      if (id === answerId) {
         step = STEP.END;
         toast("✅ 성공!", "하나님이 계획하신 도시를 찾았어요!");
         renderUI();
-      }else{
+      } else {
         eliminated.add(id);
         toast("❌ 막힌 길!", "틀렸어요. 힌트로 다시 좁혀보자!");
         applyCityClasses();
@@ -414,29 +464,34 @@
     }
   }
 
-  function setupHints(){
-    const ans = cities.find(c=>c.id===answerId);
+  // ---------- 힌트 ----------
+  function setupHints() {
+    const ans = getCityById(answerId);
     usedContinent = false;
     shownLetters = [];
     shownInitials = [];
+
     const letters = [...new Set(ans.en.toUpperCase().replace(/[^A-Z]/g, "").split(""))];
     const initials = [...new Set(ans.koInitials.split(""))];
+
     hintLetters = shuffle(letters);
     hintInitials = shuffle(initials);
   }
 
-  function hintText(){
-    const ans = cities.find(c=>c.id===answerId);
-    const cont = usedContinent ? (CONTINENT_KO[ans.continent] || ans.continent) : "??";
+  function hintText() {
+    const ans = getCityById(answerId);
+    const cont = usedContinent ? ans.continent : "??";
     const en = shownLetters.length ? shownLetters.join(" , ") : "없음";
     const ko = shownInitials.length ? shownInitials.join(" , ") : "없음";
     return `• 대륙: ${cont}<br>• 영문 힌트: ${en}<br>• 초성 힌트: ${ko}`;
   }
 
-  function eliminateNonAnswer(count){
-    if(!answerId) return;
-    const pool = getRemainingIds().filter(id => id !== answerId);
-    if(pool.length === 0){
+  // ---------- 제거 ----------
+  function eliminateNonAnswer(count) {
+    if (!answerId) return;
+    const remaining = getRemainingIds();
+    const pool = remaining.filter(id => id !== answerId);
+    if (pool.length === 0) {
       toast("이제 정답만 남았어요!", "정답 도시를 클릭하면 끝!");
       return;
     }
@@ -446,10 +501,11 @@
     applyCityClasses();
   }
 
-  function renderUI(){
+  // ---------- UI ----------
+  function renderUI() {
     stepBadge.textContent = `STEP ${step}`;
 
-    if(step===STEP.SETUP){
+    if (step === STEP.SETUP) {
       panelBody.innerHTML = `
         <b>난이도(도시 수)를 선택</b>하고 시작하세요.<br>
         아이들이 먼저 “가고 싶은 도시(내 계획)”를 고른 뒤,<br>
@@ -463,23 +519,28 @@
         </div>
         <div class="row" style="margin-top:12px">
           <button id="btnStart" class="btn">시작</button>
-          <button id="btnHostTip" class="btn secondary">진행자 URL 안내</button>
+          <button id="btnHostTip" class="btn secondary">진행자 모드 안내</button>
         </div>
       `;
       const range = $("rangeCount");
       const val = $("countVal");
-      range.addEventListener("input", ()=> val.textContent = range.value);
-      $("btnStart").addEventListener("click", ()=> newRound(parseInt(range.value,10)));
-      $("btnHostTip").addEventListener("click", ()=> {
-        const base = `${location.origin}${location.pathname}`;
-        toast("진행자 URL", `${base}?role=host`);
+      range.addEventListener("input", () => val.textContent = range.value);
+
+      $("btnStart").addEventListener("click", () => {
+        const n = parseInt(range.value, 10);
+        newRound(n);
       });
+
+      $("btnHostTip").addEventListener("click", () => {
+        toast("진행자 모드", "주소 끝에 ?role=host 를 붙이면 정답이 보여요");
+      });
+
       updateHostBox();
-      updateManualBox();
+      updateLayoutEditor();
       return;
     }
 
-    if(step===STEP.PICK){
+    if (step === STEP.PICK) {
       panelBody.innerHTML = `
         <b>아이들이 가고 싶은 도시를 선택</b>하세요. (여러 개 가능)<br>
         다 고르면 <b>다음 단계</b>로 넘어가요.
@@ -491,27 +552,30 @@
         </div>
       `;
 
-      $("btnNext").addEventListener("click", ()=>{
-        if(picked.size === 0) return;
+      $("btnNext").addEventListener("click", () => {
+        if (picked.size === 0) return;
+
         const candidates = cities.filter(c => !picked.has(c.id)).map(c => c.id);
         answerId = pickRandom(candidates);
         setupHints();
         updateHostBox();
+
         step = STEP.ELIM;
         toast("게임 시작!", "주사위로 정답 아닌 도시가 줄어들어요.");
         renderUI();
       });
 
-      $("btnClear").addEventListener("click", ()=>{
+      $("btnClear").addEventListener("click", () => {
         picked.clear();
         applyCityClasses();
       });
 
       applyCityClasses();
+      updateLayoutEditor();
       return;
     }
 
-    if(step===STEP.ELIM){
+    if (step === STEP.ELIM) {
       panelBody.innerHTML = `
         <b>주사위 단계</b><br>
         각자 주사위를 던지고, 나온 숫자(1~6)를 눌러주세요.<br>
@@ -519,7 +583,7 @@
       `;
       controls.innerHTML = `
         <div class="row">
-          ${[1,2,3,4,5,6].map(n=>`<button class="btn secondary small dice" data-n="${n}">${n}</button>`).join("")}
+          ${[1,2,3,4,5,6].map(n => `<button class="btn secondary small dice" data-n="${n}">${n}</button>`).join("")}
         </div>
         <div class="row" style="margin-top:12px">
           <button id="btnToGuess" class="btn">추리 단계로 →</button>
@@ -527,21 +591,26 @@
         </div>
       `;
 
-      controls.querySelectorAll(".dice").forEach(btn => {
-        btn.addEventListener("click", ()=> eliminateNonAnswer(parseInt(btn.dataset.n,10)));
+      controls.querySelectorAll(".dice").forEach(b => {
+        b.addEventListener("click", () => {
+          const n = parseInt(b.dataset.n, 10);
+          eliminateNonAnswer(n);
+        });
       });
-      $("btnTrim").addEventListener("click", ()=> eliminateNonAnswer(5));
-      $("btnToGuess").addEventListener("click", ()=> {
+
+      $("btnTrim").addEventListener("click", () => eliminateNonAnswer(5));
+      $("btnToGuess").addEventListener("click", () => {
         step = STEP.GUESS;
         toast("추리 시작!", "도시를 클릭해서 정답을 찾자!");
         renderUI();
       });
 
       applyCityClasses();
+      updateLayoutEditor();
       return;
     }
 
-    if(step===STEP.GUESS){
+    if (step === STEP.GUESS) {
       panelBody.innerHTML = `
         <b>정답 도시를 클릭해서 맞추기</b><br>
         틀리면 그 도시는 자동 탈락! (막힌 길)<br>
@@ -563,38 +632,44 @@
 
       const box = $("hintBox");
       box.innerHTML = hintText();
-      $("btnHintC").addEventListener("click", ()=> {
+
+      $("btnHintC").addEventListener("click", () => {
         usedContinent = true;
         box.innerHTML = hintText();
-        toast("힌트 공개!", "대륙이 열렸어요.");
+        toast("힌트 공개!", "대륙이 열렸어요");
       });
-      $("btnHintE").addEventListener("click", ()=> {
-        if(shownLetters.length < hintLetters.length){
+
+      $("btnHintE").addEventListener("click", () => {
+        if (shownLetters.length < hintLetters.length) {
           shownLetters.push(hintLetters[shownLetters.length]);
           box.innerHTML = hintText();
-          toast("영문 힌트 +1", "알파벳이 추가됐어요.");
-        }else{
+          toast("영문 힌트 +1", "알파벳이 추가됐어요");
+        } else {
           toast("영문 힌트 끝!", "더 이상 없음");
         }
       });
-      $("btnHintK").addEventListener("click", ()=> {
-        if(shownInitials.length < hintInitials.length){
+
+      $("btnHintK").addEventListener("click", () => {
+        if (shownInitials.length < hintInitials.length) {
           shownInitials.push(hintInitials[shownInitials.length]);
           box.innerHTML = hintText();
-          toast("초성 힌트 +1", "초성이 추가됐어요.");
-        }else{
+          toast("초성 힌트 +1", "초성이 추가됐어요");
+        } else {
           toast("초성 힌트 끝!", "더 이상 없음");
         }
       });
-      $("btnBack").addEventListener("click", ()=> {
+
+      $("btnBack").addEventListener("click", () => {
         step = STEP.ELIM;
         renderUI();
       });
+
       applyCityClasses();
+      updateLayoutEditor();
       return;
     }
 
-    if(step===STEP.END){
+    if (step === STEP.END) {
       panelBody.innerHTML = `
         🎉 <b>완료!</b><br>
         “내가 가고 싶은 길”이 아니라<br>
@@ -607,43 +682,71 @@
       `;
       $("btnAgain").addEventListener("click", resetAll);
       applyCityClasses();
+      updateLayoutEditor();
     }
   }
 
-  function newRound(n){
+  // ---------- host ----------
+  function updateHostBox() {
+    if (isHost() && answerId) {
+      const ans = getCityById(answerId);
+      hostBox.classList.add("show");
+      hostAnswer.textContent = `${ans.ko} (${ans.country})`;
+    } else {
+      hostBox.classList.remove("show");
+      hostAnswer.textContent = "-";
+    }
+  }
+
+  // ---------- round / reset ----------
+  function newRound(n) {
     cities = shuffle(ALL_CITIES).slice(0, n);
     picked.clear();
     eliminated.clear();
     answerId = null;
+
     usedContinent = false;
     hintLetters = [];
     hintInitials = [];
     shownLetters = [];
     shownInitials = [];
+
     step = STEP.PICK;
     renderCities();
-    toast("도시가 배치됐어요!", "가고 싶은 도시를 선택하세요.");
+    toast("도시가 배치됐어요!", "가고 싶은 도시를 선택하세요");
     renderUI();
   }
 
-  function resetAll(){
+  function resetAll() {
     cities = [];
     picked.clear();
     eliminated.clear();
     answerId = null;
+
     usedContinent = false;
     hintLetters = [];
     hintInitials = [];
     shownLetters = [];
     shownInitials = [];
+
     step = STEP.SETUP;
     citiesLayer.innerHTML = "";
     remainCount.textContent = "0";
     pickCount.textContent = "0";
     updateHostBox();
-    updateManualBox();
     renderUI();
+    updateLayoutEditor();
   }
 
+  // ---------- resize 시 재배치 ----------
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (cities.length) renderCities();
+    }, 120);
+  });
+
+  // ---------- boot ----------
   resetAll();
 })();

@@ -6,15 +6,23 @@
   <title>하나님의 목적지 도시 찾기</title>
   <style>
     :root{
-      --panelW: 380px;
+      --panelW: 390px;
       --bg: #f4f7fb;
       --card: rgba(255,255,255,.94);
       --shadow: 0 14px 28px rgba(0,0,0,.14);
       --radius: 18px;
     }
     *{ box-sizing:border-box; }
-    body{ margin:0; font-family: Pretendard, system-ui, -apple-system, Segoe UI, Arial; background: var(--bg); }
-    .app{ display:flex; height:100vh; overflow:hidden; }
+    body{
+      margin:0;
+      font-family: Pretendard, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      background: var(--bg);
+    }
+    .app{
+      display:flex;
+      height:100vh;
+      overflow:hidden;
+    }
     .panel{
       width: var(--panelW);
       background: var(--card);
@@ -24,44 +32,116 @@
       z-index: 10;
       overflow:auto;
     }
-    .title{ font-weight: 1000; font-size: 18px; margin: 4px 0 10px; }
-    .step{ font-weight: 1000; display:inline-block; padding:6px 10px; border-radius:999px; background:#111; color:#fff; font-size:12px; }
-    .desc{ color:#222; line-height:1.6; font-size:13px; margin: 10px 0 12px; }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .title{
+      font-weight: 1000;
+      font-size: 18px;
+      margin: 4px 0 10px;
+    }
+    .step{
+      font-weight: 1000;
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#111;
+      color:#fff;
+      font-size:12px;
+    }
+    .desc{
+      color:#222;
+      line-height:1.5;
+      font-size:13px;
+      margin: 10px 0 12px;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
     .btn{
-      border:0; cursor:pointer;
+      border:0;
+      cursor:pointer;
       padding: 11px 12px;
       border-radius: 14px;
-      background:#111; color:#fff; font-weight:1000;
+      background:#111;
+      color:#fff;
+      font-weight:1000;
       box-shadow: 0 10px 18px rgba(0,0,0,.12);
     }
-    .btn.secondary{ background:#fff; color:#111; border:1px solid rgba(0,0,0,.12); box-shadow:none; }
-    .btn.small{ padding: 9px 10px; border-radius: 12px; font-weight: 1000; }
-    .btn:disabled{ opacity:.45; cursor:not-allowed; }
-    .chip{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border-radius:999px;
-      background:#fff; border:1px solid rgba(0,0,0,.1);
-      font-size:12px; font-weight:1000;
+    .btn.secondary{
+      background:#fff;
+      color:#111;
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow:none;
     }
-    .hr{ height:1px; background:rgba(0,0,0,.08); margin: 12px 0; }
-    .muted{ color:#666; font-size:12px; }
-    .danger{ color:#c62828; font-weight:900; }
-    input[type="range"]{ width:100%; }
+    .btn.small{
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-weight: 1000;
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .chip{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.1);
+      font-size:12px;
+      font-weight:1000;
+    }
+    .hr{
+      height:1px;
+      background:rgba(0,0,0,.08);
+      margin: 12px 0;
+    }
+    .muted{
+      color:#666;
+      font-size:12px;
+    }
+    .codebox{
+      width:100%;
+      min-height:180px;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:12px;
+      padding:10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size:12px;
+      line-height:1.5;
+      resize:vertical;
+      background:#fff;
+    }
 
-    .stage{ flex:1; position:relative; background:#dfe6ef; overflow:hidden; }
+    .stage{
+      flex:1;
+      position:relative;
+      background:#dfe6ef;
+      overflow:hidden;
+    }
     .map{
-      position:absolute; inset:0;
-      width:100%; height:100%;
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
       object-fit: cover;
       user-select:none;
       pointer-events:none;
     }
-    #citiesLayer{ position:absolute; inset:0; }
+    #citiesLayer{
+      position:absolute;
+      inset:0;
+    }
 
     .city{
       position:absolute;
-      display:flex; align-items:center; gap:8px;
+      transform: translate(-50%, -50%);
+      display:flex;
+      align-items:center;
+      gap:8px;
       cursor:pointer;
       user-select:none;
       padding: 6px 9px;
@@ -69,72 +149,117 @@
       background: rgba(255,255,255,.92);
       border: 2px solid rgba(0,0,0,.10);
       box-shadow: 0 10px 16px rgba(0,0,0,.10);
-      transition: transform 120ms ease, opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease, left 180ms ease, top 180ms ease;
+      transition: opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
       white-space:nowrap;
-      transform-origin: center center;
     }
-    .city:hover{ filter: brightness(1.03); }
-    .city.dragging{ z-index:50; transition:none; cursor:grabbing; }
-    .city.manual-adjust{ outline:2px dashed rgba(245,124,0,.75); }
-
-    .dot{ width:11px; height:11px; border-radius:999px; background:#111; flex:0 0 auto; }
-    .label{ font-size:12px; font-weight:1000; color:#111; }
+    .city:hover{
+      z-index: 3;
+    }
+    .city.layout-edit{
+      cursor: grab;
+      border-style: dashed;
+    }
+    .city.layout-edit.dragging{
+      cursor: grabbing;
+      z-index: 50;
+      box-shadow: 0 18px 32px rgba(0,0,0,.22);
+    }
+    .dot{
+      width:11px;
+      height:11px;
+      border-radius:999px;
+      background:#111;
+      flex:0 0 auto;
+    }
+    .label{
+      font-size:12px;
+      font-weight:1000;
+      color:#111;
+    }
 
     .city.selected{
       background: rgba(47,125,255,.12);
       border-color: rgba(47,125,255,.85);
       box-shadow: 0 14px 22px rgba(47,125,255,.22);
     }
-    .city.selected .dot{ background:#2f7dff; }
-    .city.selected::after{ content:"✔"; font-weight:1000; margin-left:2px; color:#2f7dff; }
+    .city.selected .dot{
+      background:#2f7dff;
+    }
+    .city.selected::after{
+      content:"✔";
+      font-weight:1000;
+      margin-left: 2px;
+      color:#2f7dff;
+    }
 
-    .city.eliminated{ opacity:.18; pointer-events:none; filter: grayscale(1); }
-    .city.guessable{ outline: 2px solid rgba(47,125,255,.18); }
+    .city.eliminated{
+      opacity:.18;
+      pointer-events:none;
+      filter: grayscale(1);
+    }
+    .city.guessable{
+      outline: 2px solid rgba(47,125,255,.18);
+    }
+
+    .city.layout-edit.eliminated{
+      pointer-events:auto;
+    }
 
     .toast{
-      position:absolute; left:50%; top:18px;
+      position:absolute;
+      left:50%;
+      top:18px;
       transform: translateX(-50%);
       background: rgba(17,17,17,.92);
-      color:#fff; padding: 12px 14px;
+      color:#fff;
+      padding: 12px 14px;
       border-radius: 16px;
-      font-weight: 1000; font-size: 13px;
+      font-weight: 1000;
+      font-size: 13px;
       box-shadow: 0 16px 28px rgba(0,0,0,.18);
-      opacity:0; pointer-events:none;
+      opacity:0;
+      pointer-events:none;
       transition: opacity 160ms ease, transform 160ms ease;
       z-index: 20;
-      max-width: min(560px, calc(100vw - 40px));
+      max-width: 80%;
       text-align:center;
     }
-    .toast.show{ opacity:1; transform: translateX(-50%) translateY(2px); }
-    .toast .sub{ display:block; font-weight:700; opacity:.82; font-size:12px; margin-top:4px; }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(2px);
+    }
+    .toast .sub{
+      display:block;
+      font-weight:700;
+      opacity:.8;
+      font-size:12px;
+      margin-top:4px;
+    }
 
-    .hostBox, .manualBox{
-      position:absolute; right:16px;
-      background: rgba(255,255,255,.94);
+    .hostBox{
+      position:absolute;
+      right:16px;
+      top:16px;
+      background: rgba(255,255,255,.92);
       border: 1px solid rgba(0,0,0,.12);
       border-radius: 16px;
       padding: 10px 12px;
       box-shadow: 0 14px 24px rgba(0,0,0,.12);
       z-index: 20;
       display:none;
-      min-width: 240px;
+      min-width: 220px;
     }
-    .hostBox{ top:16px; }
-    .manualBox{ top:100px; width:280px; }
-    .hostBox.show, .manualBox.show{ display:block; }
-    .hostTitle{ font-weight:1000; font-size:12px; margin-bottom:6px; }
-    .hostAns{ font-weight:1000; font-size:14px; line-height:1.45; }
-    .manualBox textarea{
-      width:100%; min-height:120px; resize:vertical; margin-top:8px;
-      border-radius:12px; border:1px solid rgba(0,0,0,.12); padding:10px;
-      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    .hostBox.show{
+      display:block;
     }
-    .manualTools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-
-    @media (max-width: 960px){
-      .app{ flex-direction:column; }
-      .panel{ width:100%; max-height:42vh; }
-      .manualBox{ top:auto; bottom:16px; }
+    .hostTitle{
+      font-weight:1000;
+      font-size:12px;
+      margin-bottom:6px;
+    }
+    .hostAns{
+      font-weight:1000;
+      font-size:14px;
     }
   </style>
 </head>
@@ -158,19 +283,32 @@
       </div>
 
       <div class="hr"></div>
+
       <div id="controls"></div>
+
+      <div id="layoutEditorSection" style="display:none">
+        <div class="hr"></div>
+        <div class="muted"><b>수동 위치 보정값(JSON)</b></div>
+        <textarea id="layoutJson" class="codebox" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:8px">
+          <button id="copyLayoutBtn" class="btn secondary small">JSON 복사</button>
+          <button id="resetLayoutBtn" class="btn secondary small">수동값 초기화</button>
+        </div>
+        <div class="muted" style="margin-top:8px">
+          편집 모드 주소: <b>?layout=edit</b><br>
+          진행자 모드 주소: <b>?role=host</b><br>
+          같이 쓰기: <b>?role=host&layout=edit</b>
+        </div>
+      </div>
 
       <div class="hr"></div>
       <div class="muted">
-        진행자 전용 URL 예시: <b>?role=host</b><br>
-        수동 위치조정 URL 예시: <b>?role=host&layout=edit</b>
-      </div>
-      <div class="muted" style="margin-top:8px">
-        GitHub Pages용이면 저장소명 예: <b>macedonia-city-game</b>
+        진행자 모드: <b>?role=host</b><br>
+        레이아웃 편집: <b>?layout=edit</b>
       </div>
     </aside>
 
-    <main class="stage" id="stage">
+    <main class="stage">
       <img class="map" src="worldmap.jpg" alt="worldmap">
       <div id="citiesLayer"></div>
       <div id="toast" class="toast">안내<span class="sub">서브</span></div>
@@ -178,16 +316,6 @@
       <div id="hostBox" class="hostBox">
         <div class="hostTitle">진행자 전용 정답</div>
         <div id="hostAnswer" class="hostAns">-</div>
-      </div>
-
-      <div id="manualBox" class="manualBox">
-        <div class="hostTitle">수동 도시 위치 조정</div>
-        <div class="muted">도시를 드래그하면 위치가 저장됩니다. 아래 JSON을 app.js의 MANUAL_LAYOUTS에 붙여 넣을 수 있습니다.</div>
-        <textarea id="manualOutput" readonly></textarea>
-        <div class="manualTools">
-          <button id="btnCopyLayout" class="btn secondary small">JSON 복사</button>
-          <button id="btnResetLayout" class="btn secondary small">수동값 초기화</button>
-        </div>
       </div>
     </main>
   </div>
