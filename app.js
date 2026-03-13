@@ -12,7 +12,6 @@
     return qs.get("layout") === "edit";
   }
 
-  // ---------- 도시 데이터(50개) ----------
   const ALL_CITIES = [
     {id:"SEOUL",ko:"서울",en:"Seoul",country:"대한민국",continent:"ASIA",lat:37.5665,lon:126.9780,koInitials:"ㅅㅇ"},
     {id:"BUSAN",ko:"부산",en:"Busan",country:"대한민국",continent:"ASIA",lat:35.1796,lon:129.0756,koInitials:"ㅂㅅ"},
@@ -76,119 +75,111 @@
     {id:"AUCKLAND",ko:"오클랜드",en:"Auckland",country:"뉴질랜드",continent:"OCEANIA",lat:-36.8485,lon:174.7633,koInitials:"ㅇㅋㄹㄷ"}
   ];
 
-const MANUAL_LAYOUTS = {
-  CASABLANCA: { dx: -39, dy: 282 },
-  HAVANA: { dx: 49, dy: 283 },
-  LIMA: { dx: 3, dy: 166 },
-  SANTIAGO: { dx: 3, dy: 119 },
-  BUENOS_AIRES: { dx: 10, dy: 148 },
-  SAO_PAULO: { dx: -11, dy: 82 },
-  RIO_DE_JANEIRO: { dx: -16, dy: 54 },
-  LOS_ANGELES: { dx: 50, dy: 188 },
-  SAN_FRANCISCO: { dx: 62, dy: 173 },
-  CHICAGO: { dx: 56, dy: 260 },
-  NEW_YORK: { dx: 56, dy: 205 },
-  TORONTO: { dx: -14, dy: 181 },
-  LAGOS: { dx: -33, dy: 230 },
-  CAPE_TOWN: { dx: -30, dy: 142 },
-  JOHANNESBURG: { dx: -44, dy: 157 },
-  NAIROBI: { dx: -74, dy: 207 },
-  CAIRO: { dx: -75, dy: 280 },
-  VENICE: { dx: -14, dy: 294 },
-  ZURICH: { dx: -18, dy: 250 },
-  ATHENS: { dx: -41, dy: 276 },
-  DUBAI: { dx: -102, dy: 284 },
-  VIENNA: { dx: 70, dy: 275 },
-  ROME: { dx: 117, dy: 269 },
-  BARCELONA: { dx: -109, dy: 263 },
-  MADRID: { dx: -69, dy: 225 },
-  LONDON: { dx: -103, dy: 226 },
-  PARIS: { dx: -82, dy: 245 },
-  OSLO: { dx: -84, dy: 217 },
-  BERLIN: { dx: -30, dy: 233 },
-  AMSTERDAM: { dx: 66, dy: 196 },
-  HELSINKI: { dx: -45, dy: 185 },
-  STOCKHOLM: { dx: -113, dy: 144 },
-  ISTANBUL: { dx: 73, dy: 309 },
-  MELBOURNE: { dx: -324, dy: 77 },
-  SYDNEY: { dx: -228, dy: 92 },
-  AUCKLAND: { dx: -243, dy: 144 },
-  JAKARTA: { dx: -89, dy: 193 },
-  SINGAPORE: { dx: -203, dy: 223 },
-  KUALA_LUMPUR: { dx: -194, dy: 199 },
-  BANGKOK: { dx: -199, dy: 225 },
-  HO_CHI_MINH_CITY: { dx: -103, dy: 215 },
-  HANOI: { dx: -107, dy: 251 },
-  HONG_KONG: { dx: -227, dy: 226 },
-  MANILA: { dx: -135, dy: 301 },
-  TAIPEI: { dx: -137, dy: 245 },
-  SHANGHAI: { dx: -242, dy: 241 },
-  BEIJING: { dx: -196, dy: 255 },
-  SEOUL: { dx: -158, dy: 271 },
-  BUSAN: { dx: -118, dy: 285 },
-  TOKYO: { dx: -105, dy: 252 }
-};
+  const MANUAL_LAYOUTS = {
+    CASABLANCA: { dx: -39, dy: 282 },
+    HAVANA: { dx: 49, dy: 283 },
+    LIMA: { dx: 3, dy: 166 },
+    SANTIAGO: { dx: 3, dy: 119 },
+    BUENOS_AIRES: { dx: 10, dy: 148 },
+    SAO_PAULO: { dx: -11, dy: 82 },
+    RIO_DE_JANEIRO: { dx: -16, dy: 54 },
+    LOS_ANGELES: { dx: 50, dy: 188 },
+    SAN_FRANCISCO: { dx: 62, dy: 173 },
+    CHICAGO: { dx: 56, dy: 260 },
+    NEW_YORK: { dx: 56, dy: 205 },
+    TORONTO: { dx: -14, dy: 181 },
+    LAGOS: { dx: -33, dy: 230 },
+    CAPE_TOWN: { dx: -30, dy: 142 },
+    JOHANNESBURG: { dx: -44, dy: 157 },
+    NAIROBI: { dx: -74, dy: 207 },
+    CAIRO: { dx: -75, dy: 280 },
+    VENICE: { dx: -14, dy: 294 },
+    ZURICH: { dx: -18, dy: 250 },
+    ATHENS: { dx: -41, dy: 276 },
+    DUBAI: { dx: -102, dy: 284 },
+    VIENNA: { dx: 70, dy: 275 },
+    ROME: { dx: 117, dy: 269 },
+    BARCELONA: { dx: -109, dy: 263 },
+    MADRID: { dx: -69, dy: 225 },
+    LONDON: { dx: -103, dy: 226 },
+    PARIS: { dx: -82, dy: 245 },
+    OSLO: { dx: -84, dy: 217 },
+    BERLIN: { dx: -30, dy: 233 },
+    AMSTERDAM: { dx: 66, dy: 196 },
+    HELSINKI: { dx: -45, dy: 185 },
+    STOCKHOLM: { dx: -113, dy: 144 },
+    ISTANBUL: { dx: 73, dy: 309 },
+    MELBOURNE: { dx: -324, dy: 77 },
+    SYDNEY: { dx: -228, dy: 92 },
+    AUCKLAND: { dx: -243, dy: 144 },
+    JAKARTA: { dx: -89, dy: 193 },
+    SINGAPORE: { dx: -203, dy: 223 },
+    KUALA_LUMPUR: { dx: -194, dy: 199 },
+    BANGKOK: { dx: -199, dy: 225 },
+    HO_CHI_MINH_CITY: { dx: -103, dy: 215 },
+    HANOI: { dx: -107, dy: 251 },
+    HONG_KONG: { dx: -227, dy: 226 },
+    MANILA: { dx: -135, dy: 301 },
+    TAIPEI: { dx: -137, dy: 245 },
+    SHANGHAI: { dx: -242, dy: 241 },
+    BEIJING: { dx: -196, dy: 255 },
+    SEOUL: { dx: -158, dy: 271 },
+    BUSAN: { dx: -118, dy: 285 },
+    TOKYO: { dx: -105, dy: 252 }
+  };
 
-  // 편집 모드에서 덮어쓰기될 수동값
-  let liveManualLayouts = structuredClone(MANUAL_LAYOUTS);
+  let liveManualLayouts = JSON.parse(JSON.stringify(MANUAL_LAYOUTS));
 
-  // ---------- helpers ----------
-  function shuffle(arr) {
+  function shuffle(arr){
     const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
     }
     return a;
   }
 
-  function pickRandom(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function lonLatToXY(lon, lat){
+    return {
+      x: (lon + 180) / 360,
+      y: (90 - lat) / 180
+    };
   }
 
-  function lonLatToXY(lon, lat) {
-    const x = (lon + 180) / 360;
-    const y = (90 - lat) / 180;
-    return { x, y };
-  }
-
-  function toast(main, sub = "") {
+  function toast(main, sub=""){
     const t = $("toast");
     t.innerHTML = `${main}<span class="sub">${sub}</span>`;
     t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 1700);
+    setTimeout(()=>t.classList.remove("show"), 1700);
   }
 
-  function getCityById(id) {
-    return cities.find(c => c.id === id);
+  function getCityById(id){
+    return cities.find(c=>c.id===id);
   }
 
-  function labelWidthPx(city) {
-    return Math.max(72, city.ko.length * 14 + city.country.length * 7 + 34);
+  function labelWidthPx(city){
+    return Math.max(90, city.ko.length * 15 + city.country.length * 8 + 46);
   }
 
-  function labelHeightPx() {
-    return 34;
+  function labelHeightPx(){
+    return 36;
   }
 
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(max, v));
+  function prettyLayoutJSON(){
+    const out = {};
+    Object.keys(liveManualLayouts).sort().forEach(key=>{
+      const dx = Math.round(liveManualLayouts[key].dx || 0);
+      const dy = Math.round(liveManualLayouts[key].dy || 0);
+      if(dx !== 0 || dy !== 0){
+        out[key] = { dx, dy };
+      }
+    });
+    return JSON.stringify(out, null, 2);
   }
 
-  function prettyLayoutJSON() {
-    const filtered = {};
-    Object.keys(liveManualLayouts)
-      .sort()
-      .forEach(key => {
-        const dx = Math.round(liveManualLayouts[key].dx || 0);
-        const dy = Math.round(liveManualLayouts[key].dy || 0);
-        if (dx !== 0 || dy !== 0) filtered[key] = { dx, dy };
-      });
-    return JSON.stringify(filtered, null, 2);
-  }
-
-  // ---------- state ----------
-  const STEP = { SETUP: 0, PICK: 1, ELIM: 2, GUESS: 3, END: 4 };
+  const STEP = { SETUP:0, PICK:1, ELIM:2, GUESS:3, END:4 };
   let step = STEP.SETUP;
 
   let cities = [];
@@ -196,18 +187,15 @@ const MANUAL_LAYOUTS = {
   let eliminated = new Set();
   let answerId = null;
 
-  // 힌트
   let usedContinent = false;
   let hintLetters = [];
   let hintInitials = [];
   let shownLetters = [];
   let shownInitials = [];
 
-  // 드래그용
   let currentNodeMap = new Map();
   let dragState = null;
 
-  // ---------- refs ----------
   const citiesLayer = $("citiesLayer");
   const stepBadge = $("stepBadge");
   const panelBody = $("panelBody");
@@ -224,52 +212,53 @@ const MANUAL_LAYOUTS = {
 
   resetBtn.addEventListener("click", resetAll);
 
-  copyLayoutBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(prettyLayoutJSON());
-      toast("복사 완료!", "수동 위치 JSON이 복사됐어요.");
-    } catch {
-      toast("복사 실패", "직접 복사해주세요.");
-    }
-  });
+  if (copyLayoutBtn) {
+    copyLayoutBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(prettyLayoutJSON());
+        toast("복사 완료!", "수동 위치 JSON이 복사됐어요.");
+      } catch {
+        toast("복사 실패", "직접 복사해주세요.");
+      }
+    });
+  }
 
-  resetLayoutBtn.addEventListener("click", () => {
-    liveManualLayouts = {};
-    updateLayoutEditor();
-    renderCities();
-    toast("초기화 완료", "수동 위치값을 지웠어요.");
-  });
+  if (resetLayoutBtn) {
+    resetLayoutBtn.addEventListener("click", () => {
+      liveManualLayouts = {};
+      updateLayoutEditor();
+      renderCities();
+      toast("초기화 완료", "수동 위치값을 지웠어요.");
+    });
+  }
 
-  // ---------- 충돌 회피 자동 배치 ----------
-  function computeSmartOffsets(nodes) {
+  function computeAutoOffsets(nodes){
     const stageRect = citiesLayer.getBoundingClientRect();
-    const W = Math.max(800, stageRect.width || 1200);
-    const H = Math.max(500, stageRect.height || 700);
+    const W = Math.max(900, stageRect.width || 1200);
+    const H = Math.max(600, stageRect.height || 700);
 
     const placed = [];
 
-    for (const n of nodes) {
+    for(const n of nodes){
       const city = getCityById(n.id);
       const baseX = n.x * W;
       const baseY = n.y * H;
       const w = labelWidthPx(city);
       const h = labelHeightPx();
 
-      const manual = liveManualLayouts[n.id] || { dx: 0, dy: 0 };
-
       const candidates = [];
-      const rings = [0, 18, 28, 40, 54, 70];
-      const angles = 16;
+      const rings = [0, 16, 28, 42, 58, 76];
+      const angleCount = 16;
 
-      for (const r of rings) {
-        if (r === 0) {
-          candidates.push({ dx: manual.dx, dy: manual.dy });
+      for(const r of rings){
+        if(r === 0){
+          candidates.push({ dx: 0, dy: 0 });
         } else {
-          for (let i = 0; i < angles; i++) {
-            const a = (Math.PI * 2 * i) / angles;
+          for(let i=0;i<angleCount;i++){
+            const a = (Math.PI * 2 * i) / angleCount;
             candidates.push({
-              dx: Math.round(Math.cos(a) * r + manual.dx),
-              dy: Math.round(Math.sin(a) * r + manual.dy)
+              dx: Math.round(Math.cos(a) * r),
+              dy: Math.round(Math.sin(a) * r)
             });
           }
         }
@@ -278,7 +267,7 @@ const MANUAL_LAYOUTS = {
       let best = null;
       let bestScore = Infinity;
 
-      for (const cand of candidates) {
+      for(const cand of candidates){
         const cx = baseX + cand.dx;
         const cy = baseY + cand.dy;
 
@@ -290,7 +279,7 @@ const MANUAL_LAYOUTS = {
         };
 
         let overlapArea = 0;
-        for (const p of placed) {
+        for(const p of placed){
           const ix = Math.max(0, Math.min(rect.right, p.rect.right) - Math.max(rect.left, p.rect.left));
           const iy = Math.max(0, Math.min(rect.bottom, p.rect.bottom) - Math.max(rect.top, p.rect.top));
           overlapArea += ix * iy;
@@ -302,51 +291,69 @@ const MANUAL_LAYOUTS = {
           Math.max(0, 8 - rect.top) +
           Math.max(0, rect.bottom - (H - 8));
 
-        const distancePenalty = Math.abs(cand.dx - manual.dx) + Math.abs(cand.dy - manual.dy);
+        const distancePenalty = Math.abs(cand.dx) + Math.abs(cand.dy);
         const score = overlapArea * 1000 + outPenalty * 500 + distancePenalty;
 
-        if (score < bestScore) {
+        if(score < bestScore){
           bestScore = score;
-          best = { ...cand, rect };
-          if (score === 0) break;
+          best = { ...cand };
+          if(score === 0) break;
         }
       }
 
-      n.ox = best.dx;
-      n.oy = best.dy;
-      n.w = w;
-      n.h = h;
+      n.autoDx = best.dx;
+      n.autoDy = best.dy;
       n.baseX = baseX;
       n.baseY = baseY;
-      placed.push({ id: n.id, rect: best.rect });
+      n.w = w;
+      n.h = h;
+
+      placed.push({
+        id: n.id,
+        rect: {
+          left: baseX + best.dx - w/2,
+          top: baseY + best.dy - h/2,
+          right: baseX + best.dx + w/2,
+          bottom: baseY + best.dy + h/2
+        }
+      });
     }
   }
 
-  // ---------- 렌더 ----------
-  function renderCities() {
+  function renderCities(){
     citiesLayer.innerHTML = "";
     currentNodeMap = new Map();
 
-    const nodes = cities.map(c => {
-      const { x, y } = lonLatToXY(c.lon, c.lat);
-      return { id: c.id, x, y, ox: 0, oy: 0, w: 0, h: 0 };
+    const nodes = cities.map(c=>{
+      const {x,y} = lonLatToXY(c.lon, c.lat);
+      return {
+        id: c.id,
+        x, y,
+        autoDx: 0,
+        autoDy: 0
+      };
     });
 
-    computeSmartOffsets(nodes);
+    computeAutoOffsets(nodes);
 
-    for (const n of nodes) currentNodeMap.set(n.id, n);
+    for(const n of nodes){
+      currentNodeMap.set(n.id, n);
+    }
 
     const frag = document.createDocumentFragment();
 
-    for (const c of cities) {
+    for(const c of cities){
       const n = currentNodeMap.get(c.id);
+      const manual = liveManualLayouts[c.id] || { dx: 0, dy: 0 };
+      const finalDx = n.autoDx + manual.dx;
+      const finalDy = n.autoDy + manual.dy;
+
       const el = document.createElement("div");
       el.className = "city";
       el.dataset.id = c.id;
-
       el.style.left = (n.x * 100) + "%";
       el.style.top = (n.y * 100) + "%";
-      el.style.transform = `translate(-50%, -50%) translate(${n.ox}px, ${n.oy}px)`;
+      el.style.transform = `translate(-50%, -50%) translate(${finalDx}px, ${finalDy}px)`;
 
       const dot = document.createElement("span");
       dot.className = "dot";
@@ -358,13 +365,13 @@ const MANUAL_LAYOUTS = {
       el.appendChild(dot);
       el.appendChild(label);
 
-      if (isLayoutEdit()) {
+      if(isLayoutEdit()){
         el.classList.add("layout-edit");
         bindDrag(el, c.id);
       }
 
-      el.addEventListener("click", (e) => {
-        if (dragState && dragState.moved) return;
+      el.addEventListener("click", () => {
+        if(dragState && dragState.moved) return;
         onCityClick(c.id);
       });
 
@@ -376,14 +383,14 @@ const MANUAL_LAYOUTS = {
     updateLayoutEditor();
   }
 
-  function applyCityClasses() {
-    for (const el of citiesLayer.querySelectorAll(".city")) {
+  function applyCityClasses(){
+    for(const el of citiesLayer.querySelectorAll(".city")){
       const id = el.dataset.id;
       el.classList.toggle("selected", picked.has(id));
       el.classList.toggle("eliminated", eliminated.has(id));
-      el.classList.toggle("guessable", step === STEP.GUESS && !eliminated.has(id));
+      el.classList.toggle("guessable", step===STEP.GUESS && !eliminated.has(id));
 
-      if (isLayoutEdit()) {
+      if(isLayoutEdit()){
         el.classList.remove("guessable");
       }
     }
@@ -392,11 +399,12 @@ const MANUAL_LAYOUTS = {
     pickCount.textContent = String(picked.size);
 
     const nextBtn = document.getElementById("btnNext");
-    if (nextBtn) nextBtn.disabled = (picked.size === 0);
+    if(nextBtn) nextBtn.disabled = (picked.size === 0);
   }
 
-  function updateLayoutEditor() {
-    if (!isLayoutEdit()) {
+  function updateLayoutEditor(){
+    if(!layoutEditorSection || !layoutJson) return;
+    if(!isLayoutEdit()){
       layoutEditorSection.style.display = "none";
       return;
     }
@@ -404,18 +412,14 @@ const MANUAL_LAYOUTS = {
     layoutJson.value = prettyLayoutJSON();
   }
 
-  function getRemainingIds() {
-    return cities.map(c => c.id).filter(id => !eliminated.has(id));
+  function getRemainingIds(){
+    return cities.map(c=>c.id).filter(id=>!eliminated.has(id));
   }
 
-  // ---------- 드래그 편집 ----------
-  function bindDrag(el, cityId) {
+  function bindDrag(el, cityId){
     el.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       e.stopPropagation();
-
-      const node = currentNodeMap.get(cityId);
-      if (!node) return;
 
       const current = liveManualLayouts[cityId] || { dx: 0, dy: 0 };
 
@@ -430,16 +434,16 @@ const MANUAL_LAYOUTS = {
       };
 
       el.classList.add("dragging");
-      el.setPointerCapture?.(e.pointerId);
+      if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
     });
 
     el.addEventListener("pointermove", (e) => {
-      if (!dragState || dragState.cityId !== cityId) return;
+      if(!dragState || dragState.cityId !== cityId) return;
 
       const deltaX = e.clientX - dragState.startX;
       const deltaY = e.clientY - dragState.startY;
 
-      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+      if(Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2){
         dragState.moved = true;
       }
 
@@ -451,37 +455,36 @@ const MANUAL_LAYOUTS = {
       renderCities();
     });
 
-    function finishDrag() {
-      if (!dragState || dragState.cityId !== cityId) return;
-      dragState.el.classList.remove("dragging");
+    const finishDrag = () => {
+      if(!dragState || dragState.cityId !== cityId) return;
+      if(dragState.el) dragState.el.classList.remove("dragging");
       dragState = null;
       updateLayoutEditor();
-    }
+    };
 
     el.addEventListener("pointerup", finishDrag);
     el.addEventListener("pointercancel", finishDrag);
   }
 
-  // ---------- 클릭 로직 ----------
-  function onCityClick(id) {
-    if (isLayoutEdit()) return;
+  function onCityClick(id){
+    if(isLayoutEdit()) return;
 
-    if (step === STEP.PICK) {
-      if (picked.has(id)) picked.delete(id);
+    if(step===STEP.PICK){
+      if(picked.has(id)) picked.delete(id);
       else picked.add(id);
       applyCityClasses();
       return;
     }
 
-    if (step === STEP.GUESS) {
-      if (eliminated.has(id)) return;
-      if (!answerId) return;
+    if(step===STEP.GUESS){
+      if(eliminated.has(id)) return;
+      if(!answerId) return;
 
-      if (id === answerId) {
+      if(id===answerId){
         step = STEP.END;
         toast("✅ 성공!", "하나님이 계획하신 도시를 찾았어요!");
         renderUI();
-      } else {
+      }else{
         eliminated.add(id);
         toast("❌ 막힌 길!", "틀렸어요. 힌트로 다시 좁혀보자!");
         applyCityClasses();
@@ -489,21 +492,20 @@ const MANUAL_LAYOUTS = {
     }
   }
 
-  // ---------- 힌트 ----------
-  function setupHints() {
+  function setupHints(){
     const ans = getCityById(answerId);
     usedContinent = false;
     shownLetters = [];
     shownInitials = [];
 
-    const letters = [...new Set(ans.en.toUpperCase().replace(/[^A-Z]/g, "").split(""))];
+    const letters = [...new Set(ans.en.toUpperCase().replace(/[^A-Z]/g,"").split(""))];
     const initials = [...new Set(ans.koInitials.split(""))];
 
     hintLetters = shuffle(letters);
     hintInitials = shuffle(initials);
   }
 
-  function hintText() {
+  function hintText(){
     const ans = getCityById(answerId);
     const cont = usedContinent ? ans.continent : "??";
     const en = shownLetters.length ? shownLetters.join(" , ") : "없음";
@@ -511,26 +513,26 @@ const MANUAL_LAYOUTS = {
     return `• 대륙: ${cont}<br>• 영문 힌트: ${en}<br>• 초성 힌트: ${ko}`;
   }
 
-  // ---------- 제거 ----------
-  function eliminateNonAnswer(count) {
-    if (!answerId) return;
+  function eliminateNonAnswer(count){
+    if(!answerId) return;
     const remaining = getRemainingIds();
-    const pool = remaining.filter(id => id !== answerId);
-    if (pool.length === 0) {
+    const pool = remaining.filter(id=>id!==answerId);
+
+    if(pool.length===0){
       toast("이제 정답만 남았어요!", "정답 도시를 클릭하면 끝!");
       return;
     }
+
     const toRemove = shuffle(pool).slice(0, Math.min(count, pool.length));
-    toRemove.forEach(id => eliminated.add(id));
+    toRemove.forEach(id=>eliminated.add(id));
     toast("도시 제거!", `${toRemove.length}개가 사라졌어요.`);
     applyCityClasses();
   }
 
-  // ---------- UI ----------
-  function renderUI() {
+  function renderUI(){
     stepBadge.textContent = `STEP ${step}`;
 
-    if (step === STEP.SETUP) {
+    if(step===STEP.SETUP){
       panelBody.innerHTML = `
         <b>난이도(도시 수)를 선택</b>하고 시작하세요.<br>
         아이들이 먼저 “가고 싶은 도시(내 계획)”를 고른 뒤,<br>
@@ -547,16 +549,17 @@ const MANUAL_LAYOUTS = {
           <button id="btnHostTip" class="btn secondary">진행자 모드 안내</button>
         </div>
       `;
+
       const range = $("rangeCount");
       const val = $("countVal");
-      range.addEventListener("input", () => val.textContent = range.value);
+      range.addEventListener("input", ()=> val.textContent = range.value);
 
-      $("btnStart").addEventListener("click", () => {
+      $("btnStart").addEventListener("click", ()=>{
         const n = parseInt(range.value, 10);
         newRound(n);
       });
 
-      $("btnHostTip").addEventListener("click", () => {
+      $("btnHostTip").addEventListener("click", ()=>{
         toast("진행자 모드", "주소 끝에 ?role=host 를 붙이면 정답이 보여요");
       });
 
@@ -565,7 +568,7 @@ const MANUAL_LAYOUTS = {
       return;
     }
 
-    if (step === STEP.PICK) {
+    if(step===STEP.PICK){
       panelBody.innerHTML = `
         <b>아이들이 가고 싶은 도시를 선택</b>하세요. (여러 개 가능)<br>
         다 고르면 <b>다음 단계</b>로 넘어가요.
@@ -577,10 +580,10 @@ const MANUAL_LAYOUTS = {
         </div>
       `;
 
-      $("btnNext").addEventListener("click", () => {
-        if (picked.size === 0) return;
+      $("btnNext").addEventListener("click", ()=>{
+        if(picked.size===0) return;
 
-        const candidates = cities.filter(c => !picked.has(c.id)).map(c => c.id);
+        const candidates = cities.filter(c=>!picked.has(c.id)).map(c=>c.id);
         answerId = pickRandom(candidates);
         setupHints();
         updateHostBox();
@@ -590,7 +593,7 @@ const MANUAL_LAYOUTS = {
         renderUI();
       });
 
-      $("btnClear").addEventListener("click", () => {
+      $("btnClear").addEventListener("click", ()=>{
         picked.clear();
         applyCityClasses();
       });
@@ -600,7 +603,7 @@ const MANUAL_LAYOUTS = {
       return;
     }
 
-    if (step === STEP.ELIM) {
+    if(step===STEP.ELIM){
       panelBody.innerHTML = `
         <b>주사위 단계</b><br>
         각자 주사위를 던지고, 나온 숫자(1~6)를 눌러주세요.<br>
@@ -608,7 +611,7 @@ const MANUAL_LAYOUTS = {
       `;
       controls.innerHTML = `
         <div class="row">
-          ${[1,2,3,4,5,6].map(n => `<button class="btn secondary small dice" data-n="${n}">${n}</button>`).join("")}
+          ${[1,2,3,4,5,6].map(n=>`<button class="btn secondary small dice" data-n="${n}">${n}</button>`).join("")}
         </div>
         <div class="row" style="margin-top:12px">
           <button id="btnToGuess" class="btn">추리 단계로 →</button>
@@ -616,15 +619,15 @@ const MANUAL_LAYOUTS = {
         </div>
       `;
 
-      controls.querySelectorAll(".dice").forEach(b => {
-        b.addEventListener("click", () => {
+      controls.querySelectorAll(".dice").forEach(b=>{
+        b.addEventListener("click", ()=>{
           const n = parseInt(b.dataset.n, 10);
           eliminateNonAnswer(n);
         });
       });
 
-      $("btnTrim").addEventListener("click", () => eliminateNonAnswer(5));
-      $("btnToGuess").addEventListener("click", () => {
+      $("btnTrim").addEventListener("click", ()=> eliminateNonAnswer(5));
+      $("btnToGuess").addEventListener("click", ()=>{
         step = STEP.GUESS;
         toast("추리 시작!", "도시를 클릭해서 정답을 찾자!");
         renderUI();
@@ -635,7 +638,7 @@ const MANUAL_LAYOUTS = {
       return;
     }
 
-    if (step === STEP.GUESS) {
+    if(step===STEP.GUESS){
       panelBody.innerHTML = `
         <b>정답 도시를 클릭해서 맞추기</b><br>
         틀리면 그 도시는 자동 탈락! (막힌 길)<br>
@@ -658,33 +661,33 @@ const MANUAL_LAYOUTS = {
       const box = $("hintBox");
       box.innerHTML = hintText();
 
-      $("btnHintC").addEventListener("click", () => {
+      $("btnHintC").addEventListener("click", ()=>{
         usedContinent = true;
         box.innerHTML = hintText();
         toast("힌트 공개!", "대륙이 열렸어요");
       });
 
-      $("btnHintE").addEventListener("click", () => {
-        if (shownLetters.length < hintLetters.length) {
+      $("btnHintE").addEventListener("click", ()=>{
+        if(shownLetters.length < hintLetters.length){
           shownLetters.push(hintLetters[shownLetters.length]);
           box.innerHTML = hintText();
           toast("영문 힌트 +1", "알파벳이 추가됐어요");
-        } else {
+        }else{
           toast("영문 힌트 끝!", "더 이상 없음");
         }
       });
 
-      $("btnHintK").addEventListener("click", () => {
-        if (shownInitials.length < hintInitials.length) {
+      $("btnHintK").addEventListener("click", ()=>{
+        if(shownInitials.length < hintInitials.length){
           shownInitials.push(hintInitials[shownInitials.length]);
           box.innerHTML = hintText();
           toast("초성 힌트 +1", "초성이 추가됐어요");
-        } else {
+        }else{
           toast("초성 힌트 끝!", "더 이상 없음");
         }
       });
 
-      $("btnBack").addEventListener("click", () => {
+      $("btnBack").addEventListener("click", ()=>{
         step = STEP.ELIM;
         renderUI();
       });
@@ -694,7 +697,7 @@ const MANUAL_LAYOUTS = {
       return;
     }
 
-    if (step === STEP.END) {
+    if(step===STEP.END){
       panelBody.innerHTML = `
         🎉 <b>완료!</b><br>
         “내가 가고 싶은 길”이 아니라<br>
@@ -706,25 +709,25 @@ const MANUAL_LAYOUTS = {
         </div>
       `;
       $("btnAgain").addEventListener("click", resetAll);
+
       applyCityClasses();
       updateLayoutEditor();
+      return;
     }
   }
 
-  // ---------- host ----------
-  function updateHostBox() {
-    if (isHost() && answerId) {
+  function updateHostBox(){
+    if(isHost() && answerId){
       const ans = getCityById(answerId);
       hostBox.classList.add("show");
       hostAnswer.textContent = `${ans.ko} (${ans.country})`;
-    } else {
+    }else{
       hostBox.classList.remove("show");
       hostAnswer.textContent = "-";
     }
   }
 
-  // ---------- round / reset ----------
-  function newRound(n) {
+  function newRound(n){
     cities = shuffle(ALL_CITIES).slice(0, n);
     picked.clear();
     eliminated.clear();
@@ -742,7 +745,7 @@ const MANUAL_LAYOUTS = {
     renderUI();
   }
 
-  function resetAll() {
+  function resetAll(){
     cities = [];
     picked.clear();
     eliminated.clear();
@@ -763,15 +766,13 @@ const MANUAL_LAYOUTS = {
     updateLayoutEditor();
   }
 
-  // ---------- resize 시 재배치 ----------
   let resizeTimer = null;
-  window.addEventListener("resize", () => {
+  window.addEventListener("resize", ()=>{
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (cities.length) renderCities();
+    resizeTimer = setTimeout(()=>{
+      if(cities.length) renderCities();
     }, 120);
   });
 
-  // ---------- boot ----------
   resetAll();
 })();
