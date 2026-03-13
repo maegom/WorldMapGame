@@ -116,54 +116,62 @@
       background:#fff;
     }
 
-    .stage{
-      flex:1;
-      position:relative;
-      background:#dfe6ef;
-      overflow:hidden;
-    }
-    .map{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      user-select:none;
-      pointer-events:none;
-    }
-    #citiesLayer{
-      position:absolute;
-      inset:0;
-    }
-
-    .city{
-      position:absolute;
-      transform: translate(-50%, -50%);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      user-select:none;
-      padding: 6px 9px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.92);
-      border: 2px solid rgba(0,0,0,.10);
-      box-shadow: 0 10px 16px rgba(0,0,0,.10);
-      transition: opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-      white-space:nowrap;
-    }
-
-    .city {
-  touch-action: none;
+.stage{
+  flex:1;
+  position:relative;
+  background:#dfe6ef;
+  overflow:hidden;
 }
 
-.city.layout-edit {
-  cursor: grab;
-  touch-action: none;
+.map-viewport{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, -50%);
+  width: min(calc(100vw - 390px - 40px), calc((100vh - 40px) * 2));
+  height: min(calc((100vw - 390px - 40px) / 2), calc(100vh - 40px));
+  aspect-ratio: 2 / 1;
 }
 
-.city.layout-edit.dragging {
-  cursor: grabbing;
+.map{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  user-select:none;
+  pointer-events:none;
+}
+
+#citiesLayer{
+  position:absolute;
+  inset:0;
+}
+
+.city{
+  position:absolute;
+  transform: translate(-50%, -50%);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  user-select:none;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  border: 2px solid rgba(0,0,0,.10);
+  box-shadow: 0 10px 16px rgba(0,0,0,.10);
+  white-space:nowrap;
+  touch-action:none;
+}
+
+.city.layout-edit{
+  cursor:grab;
+  touch-action:none;
+}
+
+.city.layout-edit.dragging{
+  cursor:grabbing;
 }
     .city:hover{
       z-index: 3;
@@ -320,16 +328,19 @@
       </div>
     </aside>
 
-    <main class="stage">
-      <img class="map" src="worldmap.jpg" alt="worldmap">
-      <div id="citiesLayer"></div>
-      <div id="toast" class="toast">안내<span class="sub">서브</span></div>
+<main class="stage">
+  <div id="mapViewport" class="map-viewport">
+    <img class="map" src="worldmap.jpg" alt="worldmap">
+    <div id="citiesLayer"></div>
+  </div>
 
-      <div id="hostBox" class="hostBox">
-        <div class="hostTitle">진행자 전용 정답</div>
-        <div id="hostAnswer" class="hostAns">-</div>
-      </div>
-    </main>
+  <div id="toast" class="toast">안내<span class="sub">서브</span></div>
+
+  <div id="hostBox" class="hostBox">
+    <div class="hostTitle">진행자 전용 정답</div>
+    <div id="hostAnswer" class="hostAns">-</div>
+  </div>
+</main>
   </div>
 
   <script src="app.js"></script>
