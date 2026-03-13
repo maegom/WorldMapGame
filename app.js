@@ -370,9 +370,14 @@
         bindDrag(el, c.id);
       }
 
-   el.addEventListener("click", () => {
-  if (isLayoutEdit()) return;
+ el.addEventListener("click", () => {
   if (dragState && dragState.moved) return;
+
+  if (isLayoutEdit()) {
+    toast(`${c.ko}`, `dx: ${(liveManualLayouts[c.id]?.dx ?? 0)}, dy: ${(liveManualLayouts[c.id]?.dy ?? 0)}`);
+    return;
+  }
+
   onCityClick(c.id);
 });
 
@@ -418,7 +423,48 @@
   }
 
  function bindDrag(el, cityId){
+  const onMove = (e) => {
+    if (!dragState || dragState.cityId !== cityId) return;
+
+    const deltaX = e.clientX - dragState.startX;
+    const deltaY = e.clientY - dragState.startY;
+
+    if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+      dragState.moved = true;
+    }
+
+    const newDx = Math.round(dragState.startDx + deltaX);
+    const newDy = Math.round(dragState.startDy + deltaY);
+
+    liveManualLayouts[cityId] = {
+      dx: newDx,
+      dy: newDy
+    };
+
+    const finalDx = dragState.autoDx + newDx;
+    const finalDy = dragState.autoDy + newDy;
+
+    dragState.el.style.transform =
+      `translate(-50%, -50%) translate(${finalDx}px, ${finalDy}px)`;
+  };
+
+  const onUp = () => {
+    if (!dragState || dragState.cityId !== cityId) return;
+
+    dragState.el.classList.remove("dragging");
+    dragState.el.style.transition = "";
+
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
+
+    dragState = null;
+    updateLayoutEditor();
+  };
+
   el.addEventListener("pointerdown", (e) => {
+    if (!isLayoutEdit()) return;
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -441,45 +487,11 @@
 
     el.classList.add("dragging");
     el.style.transition = "none";
-    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   });
-
-  el.addEventListener("pointermove", (e) => {
-    if (!dragState || dragState.cityId !== cityId) return;
-
-    const deltaX = e.clientX - dragState.startX;
-    const deltaY = e.clientY - dragState.startY;
-
-    if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-      dragState.moved = true;
-    }
-
-    const newDx = Math.round(dragState.startDx + deltaX);
-    const newDy = Math.round(dragState.startDy + deltaY);
-
-    liveManualLayouts[cityId] = {
-      dx: newDx,
-      dy: newDy
-    };
-
-    const finalDx = dragState.autoDx + newDx;
-    const finalDy = dragState.autoDy + newDy;
-
-    el.style.transform = `translate(-50%, -50%) translate(${finalDx}px, ${finalDy}px)`;
-  });
-
-  const finishDrag = () => {
-    if (!dragState || dragState.cityId !== cityId) return;
-
-    dragState.el.classList.remove("dragging");
-    dragState.el.style.transition = "";
-    dragState = null;
-
-    updateLayoutEditor();
-  };
-
-  el.addEventListener("pointerup", finishDrag);
-  el.addEventListener("pointercancel", finishDrag);
 }
 
 function onCityClick(id){
