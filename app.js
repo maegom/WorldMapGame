@@ -772,7 +772,7 @@ function onCityClick(id){
       `;
       controls.innerHTML = `
         <div class="row">
-          <button id="btnNext" class="btn" disabled>다음 단계 →</button>
+          <button id="btnNext" class="btn" disabled>복음 전하기 →</button>
           <button id="btnClear" class="btn secondary">선택 초기화</button>
         </div>
       `;
