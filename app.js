@@ -1,34 +1,17 @@
-(() => {
+document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
   const $ = (id) => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
-
-  // 레이아웃 편집 모드 확인 (?layout=edit)
   const isLayoutEdit = qs.get("layout") === "edit";
 
-  // ---------------------------------------------------------
-  // 1. 수동 위치 보정 데이터 (편집 모드에서 복사한 내용을 여기에 붙여넣으세요)
-  
-  // ---------------------------------------------------------
+  // 보정된 수동 위치 (Havana, Mexico City 등)
   let MANUAL_LAYOUTS = {
-  "HAVANA": {
-    "x": 27.46,
-    "y": 49.22
-  },
-  "MEXICO_CITY": {
-    "x": 24.61,
-    "y": 65.71
-  },
-  "BEIJING": {
-    "x": 72.93,
-    "y": 58.49
-  },
-  "BUSAN": {
-    "x": 77.03,
-    "y": 58.15
-  }
-}
+    "HAVANA": { "x": 27.46, "y": 49.22 },
+    "MEXICO_CITY": { "x": 24.61, "y": 65.71 },
+    "BEIJING": { "x": 72.93, "y": 58.49 },
+    "BUSAN": { "x": 77.03, "y": 58.15 }
+  };
 
   // 2. 전체 도시 데이터 (56개 전체 및 초성 데이터 포함)
   const ALL_CITIES = [
@@ -91,15 +74,9 @@
   ];
 
   let cities = [], picked = new Set(), eliminated = new Set(), answerId = null;
-  let step = 0;
-  let dragState = null;
+  let step = 0, dragState = null;
 
-  // 힌트 상태 관리
-  let hintState = {
-    continent: false,
-    enLetters: new Set(),
-    koInitials: new Set()
-  };
+  let hintState = { continent: false, enLetters: new Set(), koInitials: new Set() };
 
   const toast = (msg) => {
     const t = $("toast"); t.textContent = msg; t.style.opacity = 1;
@@ -108,7 +85,6 @@
 
   const lonLatToXY = (lon, lat) => ({ x: (lon + 180) / 360, y: (90 - lat) / 180 });
 
-  // 위치 정보 계산 (수동 보정값이 있으면 우선 사용)
   function getPos(city) {
     if (MANUAL_LAYOUTS[city.id]) return MANUAL_LAYOUTS[city.id];
     const raw = lonLatToXY(city.lon, city.lat);
@@ -125,23 +101,11 @@
       el.dataset.id = c.id;
       el.style.left = pos.x + "%"; 
       el.style.top = pos.y + "%";
-      el.innerHTML = `<span class="dot" style="width:8px; height:8px; background:#111; border-radius:50%"></span><span class="label" style="font-weight:700; font-size:12px;">${c.ko}</span>`;
-      
-      // 편집 모드일 때 드래그 기능 부여
-      if (isLayoutEdit) {
-        el.style.cursor = "move";
-        el.style.border = "2px dashed #2f7dff";
-        bindDrag(el, c.id);
-      }
-
-      el.onclick = () => {
-        if (dragState && dragState.moved) return;
-        onCityClick(c.id);
-      };
+      el.innerHTML = `<span class="dot" style="width:6px; height:6px; background:#111; border-radius:50%"></span><span class="label" style="font-weight:700; font-size:12px;">${c.ko}</span>`;
+      el.onclick = () => onCityClick(c.id);
       layer.appendChild(el);
     });
     applyCityClasses();
-    if (isLayoutEdit) updateLayoutJSON();
   }
 
   function applyCityClasses() {
@@ -168,138 +132,93 @@
     }
   }
 
-  // 레이아웃 편집용 드래그 로직
-  function bindDrag(el, id) {
-    el.onpointerdown = (e) => {
-      e.preventDefault();
-      const rect = $("mapViewport").getBoundingClientRect();
-      dragState = { id, moved: false };
-
-      window.onpointermove = (ev) => {
-        dragState.moved = true;
-        let px = ((ev.clientX - rect.left) / rect.width) * 100;
-        let py = ((ev.clientY - rect.top) / rect.height) * 100;
-
-        px = Math.max(0, Math.min(100, px));
-        py = Math.max(0, Math.min(100, py));
-
-        el.style.left = px + "%";
-        el.style.top = py + "%";
-        
-        MANUAL_LAYOUTS[id] = { x: parseFloat(px.toFixed(2)), y: parseFloat(py.toFixed(2)) };
-        updateLayoutJSON();
-      };
-
-      window.onpointerup = () => {
-        window.onpointermove = null;
-        window.onpointerup = null;
-      };
-    };
-  }
-
-  function updateLayoutJSON() {
-    if (isLayoutEdit && $("layoutJson")) {
-      $("layoutJson").value = JSON.stringify(MANUAL_LAYOUTS, null, 2);
-    }
-  }
-
-  // 힌트 UI 업데이트 함수
   function updateHintUI() {
     const ans = cities.find(c => c.id === answerId);
     $("hintPanel").style.display = "block";
-    
     if (hintState.continent) $("hintContinent").innerHTML = `대륙: <b>${ans.continent}</b>`;
     if (hintState.enLetters.size > 0) $("hintEnList").textContent = Array.from(hintState.enLetters).sort().join(", ");
-    if (hintState.koInitials.size > 0) $("hintKoList").textContent = Array.from(hintState.koInitials).join(", ");
+    if (hintState.koInitials.size > 0) $("hintKoList").textContent = Array.from(hintState.koInitials).sort().join(", ");
   }
 
   function renderUI() {
     $("stepBadge").textContent = `STEP ${step}`;
     const body = $("panelBody"), ctrl = $("controls");
+    body.innerHTML = ""; ctrl.innerHTML = "";
 
     if (step === 0) {
-      body.innerHTML = `아이들이 여행할 도시의 개수를 정해주세요.<br><br>도시 개수: <b id="rangeVal" style="color:#2f7dff; font-size:18px;">30</b>개`;
-      ctrl.innerHTML = `<input id="rCnt" type="range" min="10" max="50" value="30" style="width:100%"><button id="btnS" class="btn">게임 시작</button>`;
+      body.innerHTML = `도시 개수: <b id="rangeVal" style="color:var(--primary); font-size:20px;">20</b>개`;
+      const range = document.createElement("input");
+      range.type = "range"; range.min = "10"; range.max = "50"; range.value = "20";
+      range.style.width = "100%";
+      range.oninput = () => $("rangeVal").textContent = range.value;
       
-      const range = $("rCnt"), valDisp = $("rangeVal");
-      range.oninput = () => valDisp.textContent = range.value;
-
-      $("btnS").onclick = () => {
+      const startBtn = document.createElement("button");
+      startBtn.className = "btn"; startBtn.textContent = "게임 시작";
+      startBtn.onclick = () => {
         const count = parseInt(range.value);
-        cities = Array.from(ALL_CITIES).sort(() => Math.random() - 0.5).slice(0, count);
+        cities = ALL_CITIES.sort(() => Math.random() - 0.5).slice(0, count);
         step = 1; renderCities(); renderUI();
       };
-    } else if (step === 1) {
-      body.innerHTML = "아이들이 <b>가고 싶은 도시</b>들을 선택하세요.<br>선택된 도시는 <span style='color:#2f7dff; font-weight:800;'>파란색</span>으로 표시됩니다.";
-      ctrl.innerHTML = `<button id="btnN" class="btn">선택 완료</button>`;
-      $("btnN").onclick = () => {
-        if (picked.size === 0) return toast("최소 한 개의 도시를 선택해주세요!");
+      ctrl.appendChild(range); ctrl.appendChild(startBtn);
+    } 
+    else if (step === 1) {
+      body.innerHTML = "아이들이 가고 싶은 <b>도시를 선택</b>하세요.";
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "btn"; nextBtn.textContent = "선택 완료";
+      nextBtn.onclick = () => {
+        if (picked.size === 0) return toast("도시를 선택해주세요!");
         const pool = cities.filter(c => !picked.has(c.id));
         answerId = pool[Math.floor(Math.random() * pool.length)].id;
         step = 2; renderUI();
       };
-    } else if (step === 2) {
-      body.innerHTML = "주사위를 던져 정답이 아닌 도시들을 제거하세요.";
-      ctrl.innerHTML = `<div class="row">${[1,2,3,4,5,6].map(n => `<button class="btn small dice" data-n="${n}">${n}</button>`).join("")}</div><button id="btnG" class="btn">목적지 찾기 시작</button>`;
-      ctrl.querySelectorAll(".dice").forEach(b => b.onclick = () => {
-        const p = cities.filter(c => !eliminated.has(c.id) && c.id !== answerId);
-        p.sort(() => Math.random() - 0.5).slice(0, b.dataset.n).forEach(c => eliminated.add(c.id));
-        applyCityClasses();
+      ctrl.appendChild(nextBtn);
+    } 
+    else if (step === 2) {
+      body.innerHTML = "<b>주사위</b>로 도시 제거";
+      const grid = document.createElement("div"); grid.className = "dice-grid";
+      [1,2,3,4,5,6].forEach(n => {
+        const b = document.createElement("button");
+        b.className = "btn secondary"; b.textContent = n;
+        b.onclick = () => {
+          const p = cities.filter(c => !eliminated.has(c.id) && c.id !== answerId);
+          p.sort(() => Math.random() - 0.5).slice(0, n).forEach(c => eliminated.add(c.id));
+          applyCityClasses();
+        };
+        grid.appendChild(b);
       });
-      $("btnG").onclick = () => { step = 3; renderUI(); };
-    } else if (step === 3) {
-      body.innerHTML = "목적지를 맞추세요! 힌트를 사용할 수 있습니다.";
-      ctrl.innerHTML = `
-        <div class="row">
-          <button id="hCont" class="btn small secondary">대륙 힌트</button>
-          <button id="hEn" class="btn small secondary">영문 알파벳</button>
-          <button id="hKo" class="btn small secondary">한글 초성</button>
-        </div>`;
-      
-      const ans = cities.find(c => c.id === answerId);
-
-      $("hCont").onclick = () => { hintState.continent = true; updateHintUI(); };
-
-      $("hEn").onclick = () => {
-        const letters = ans.en.replace(/\s/g, '').toUpperCase().split('');
-        const filtered = letters.filter(l => !hintState.enLetters.has(l));
-        if (filtered.length > 0) {
-          hintState.enLetters.add(filtered[Math.floor(Math.random() * filtered.length)]);
-          updateHintUI();
-        } else toast("모든 영문 힌트를 열었습니다!");
-      };
-
-      $("hKo").onclick = () => {
-        const initials = ans.koInitials.split('');
-        const filtered = initials.filter(i => !hintState.koInitials.has(i));
-        if (filtered.length > 0) {
-          hintState.koInitials.add(filtered[Math.floor(Math.random() * filtered.length)]);
-          updateHintUI();
-        } else toast("모든 초성 힌트를 열었습니다!");
-      };
+      const findBtn = document.createElement("button");
+      findBtn.className = "btn"; findBtn.textContent = "목적지 찾기";
+      findBtn.onclick = () => { step = 3; renderUI(); };
+      ctrl.appendChild(grid); ctrl.appendChild(findBtn);
+    } 
+    else if (step === 3) {
+      body.innerHTML = "목적지 찾기!";
+      const stack = document.createElement("div"); stack.className = "hint-stack";
+      const hData = [
+        { id: "hCont", text: "대륙 힌트", action: () => { hintState.continent = true; } },
+        { id: "hEn", text: "영문 알파벳", action: () => {
+          const ans = cities.find(c => c.id === answerId);
+          const letters = ans.en.replace(/\s/g, '').toUpperCase().split('');
+          const filtered = letters.filter(l => !hintState.enLetters.has(l));
+          if (filtered.length) hintState.enLetters.add(filtered[Math.floor(Math.random() * filtered.length)]);
+        } },
+        { id: "hKo", text: "한글 초성", action: () => {
+          const ans = cities.find(c => c.id === answerId);
+          const initials = ans.koInitials.split('');
+          const filtered = initials.filter(i => !hintState.koInitials.has(i));
+          if (filtered.length) hintState.koInitials.add(filtered[Math.floor(Math.random() * filtered.length)]);
+        } }
+      ];
+      hData.forEach(h => {
+        const b = document.createElement("button");
+        b.className = "btn secondary"; b.textContent = h.text;
+        b.onclick = () => { h.action(); updateHintUI(); };
+        stack.appendChild(b);
+      });
+      ctrl.appendChild(stack);
     }
-  }
-
-  // 편집 모드 UI 초기화
-  if (isLayoutEdit) {
-    const editUI = document.createElement("div");
-    editUI.id = "layoutEditorSection";
-    editUI.style.marginTop = "20px";
-    editUI.style.paddingTop = "10px";
-    editUI.style.borderTop = "2px dashed #ccc";
-    editUI.innerHTML = `
-      <div style="font-size:12px; color:#d32f2f; font-weight:bold; margin-bottom:8px;">🛠 레이아웃 편집 모드 활성화됨</div>
-      <textarea id="layoutJson" style="width:100%; height:100px; font-size:10px; font-family:monospace; margin-bottom:8px;" readonly></textarea>
-      <button id="copyLayoutBtn" class="btn secondary small" style="width:100%">새 좌표 JSON 복사하기</button>
-    `;
-    document.querySelector(".panel").appendChild(editUI);
-    $("copyLayoutBtn").onclick = () => {
-      $("layoutJson").select();
-      document.execCommand("copy");
-      toast("좌표가 복사되었습니다! MANUAL_LAYOUTS에 붙여넣으세요.");
-    };
   }
 
   $("fullResetBtn").onclick = () => location.reload();
   renderUI();
-})();
+});
