@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctrl.appendChild(range); ctrl.appendChild(startBtn);
     } 
     else if (step === 1) {
-      body.innerHTML = "아이들이 가고 싶은 <b>도시를 선택</b>하세요.";
+      body.innerHTML = "도시를 선택</b>하세요.";
       const nextBtn = document.createElement("button");
       nextBtn.className = "btn"; nextBtn.textContent = "선택 완료";
       nextBtn.onclick = () => {
