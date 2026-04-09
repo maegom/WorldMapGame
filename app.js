@@ -5,70 +5,58 @@ document.addEventListener("DOMContentLoaded", () => {
   const qs = new URLSearchParams(location.search);
   const isLayoutEdit = qs.get("layout") === "edit";
 
-  // 보정된 수동 위치 (Havana, Mexico City 등)
-// 총 50개 도시의 보정된 좌표
-  let MANUAL_LAYOUTS = {
-    // ASIA (15)
-    "SEOUL": { "x": 75.55, "y": 49.4 },
-    "TOKYO": { "x": 80.35, "y": 48.69 },
-    "BEIJING": { "x": 72.34, "y": 50.03 },
-    "SHANGHAI": { "x": 73.2, "y": 54.2 },
-    "HONG_KONG": { "x": 73.13, "y": 58.29 },
-    "TAIPEI": { "x": 75.98, "y": 56.55 },
-    "BANGKOK": { "x": 69.1, "y": 63.16 },
-    "SINGAPORE": { "x": 71.09, "y": 71.19 },
-    "JAKARTA": { "x": 73.09, "y": 73.78 },
-    "HANOI": { "x": 70.16, "y": 59.47 },
-    "MANILA": { "x": 74.96, "y": 63.63 },
-    "DELHI": { "x": 65.94, "y": 61.43 },
-    "MUMBAI": { "x": 63.16, "y": 61.04 },
-    "DUBAI": { "x": 58.83, "y": 57.26 },
-    "ULAANBAATAR": { "x": 70.5, "y": 44.2 },
-
-    // EUROPE (9) - 비중 축소 및 모스크바 추가
-    "LONDON": { "x": 45.16, "y": 37.99 },
-    "PARIS": { "x": 47.66, "y": 42 },
-    "BERLIN": { "x": 51.41, "y": 38.94 },
-    "MADRID": { "x": 44.22, "y": 47.51 },
-    "ROME": { "x": 50.08, "y": 47.12 },
-    "STOCKHOLM": { "x": 49.49, "y": 32.56 },
-    "ISTANBUL": { "x": 55.12, "y": 48.14 },
-    "ATHENS": { "x": 52.19, "y": 49.87 },
-    "MOSCOW": { "x": 57.2, "y": 34.5 },
-
-    // AFRICA (11) - 비중 확대
-    "CAIRO": { "x": 54.26, "y": 54.67 },
-    "CASABLANCA": { "x": 45.51, "y": 52.07 },
-    "NAIROBI": { "x": 56.41, "y": 67.88 },
-    "LAGOS": { "x": 47.58, "y": 65.21 },
-    "CAPE_TOWN": { "x": 51.37, "y": 84.87 },
-    "JOHANNESBURG": { "x": 53.36, "y": 81.73 },
-    "ADDIS_ABABA": { "x": 58.5, "y": 64.2 },
-    "ALGIERS": { "x": 49.5, "y": 50.1 },
-    "KINSHASA": { "x": 52.3, "y": 69.4 },
-    "DAKAR": { "x": 42.1, "y": 61.2 },
-    "ACCRA": { "x": 47.5, "y": 63.8 },
-
-    // AMERICAS (12)
-    "NEW_YORK": { "x": 30.78, "y": 46.49 },
-    "LOS_ANGELES": { "x": 21.17, "y": 49.63 },
-    "CHICAGO": { "x": 28.13, "y": 43.5 },
-    "TORONTO": { "x": 30, "y": 40.59 },
-    "VANCOUVER": { "x": 19.3, "y": 41.37 },
-    "MEXICO_CITY": { "x": 24.53, "y": 55.53 },
-    "HAVANA": { "x": 30.31, "y": 59.54 },
-    "RIO_DE_JANEIRO": { "x": 38.71, "y": 75.75 },
-    "SAO_PAULO": { "x": 36.64, "y": 78.89 },
-    "BUENOS_AIRES": { "x": 35.74, "y": 82.98 },
-    "SANTIAGO": { "x": 31.48, "y": 85.26 },
-    "LIMA": { "x": 30, "y": 72.92 },
-
-    // OCEANIA (3)
-    "SYDNEY": { "x": 80.98, "y": 82.67 },
-    "MELBOURNE": { "x": 78.79, "y": 84.48 },
-    "AUCKLAND": { "x": 86.25, "y": 84.48 }
-  };
-  
+let MANUAL_LAYOUTS = {
+  "SEOUL": { "x": 75.55, "y": 49.4 },
+  "TOKYO": { "x": 80.35, "y": 48.69 },
+  "BEIJING": { "x": 72.34, "y": 50.03 },
+  "SHANGHAI": { "x": 73.2, "y": 54.2 },
+  "HONG_KONG": { "x": 74.56, "y": 58.76 },
+  "TAIPEI": { "x": 76.96, "y": 56.11 },
+  "BANGKOK": { "x": 70.11, "y": 64.83 },
+  "SINGAPORE": { "x": 71.09, "y": 71.19 },
+  "JAKARTA": { "x": 73.09, "y": 73.78 },
+  "HANOI": { "x": 70.16, "y": 59.47 },
+  "MANILA": { "x": 74.96, "y": 63.63 },
+  "DELHI": { "x": 66.65, "y": 62.43 },
+  "MUMBAI": { "x": 63.84, "y": 59.52 },
+  "DUBAI": { "x": 59.04, "y": 56.23 },
+  "ULAANBAATAR": { "x": 70.5, "y": 44.2 },
+  "LONDON": { "x": 45.16, "y": 37.99 },
+  "PARIS": { "x": 47.66, "y": 42 },
+  "BERLIN": { "x": 51.41, "y": 38.94 },
+  "MADRID": { "x": 44.22, "y": 47.51 },
+  "ROME": { "x": 50.08, "y": 47.12 },
+  "STOCKHOLM": { "x": 49.49, "y": 32.56 },
+  "ISTANBUL": { "x": 55.12, "y": 48.14 },
+  "ATHENS": { "x": 52.19, "y": 49.87 },
+  "MOSCOW": { "x": 57.2, "y": 34.5 },
+  "CAIRO": { "x": 54.71, "y": 54.09 },
+  "CASABLANCA": { "x": 45.51, "y": 52.07 },
+  "NAIROBI": { "x": 56.41, "y": 67.88 },
+  "LAGOS": { "x": 47.58, "y": 65.21 },
+  "CAPE_TOWN": { "x": 52.6, "y": 82.9 },
+  "JOHANNESBURG": { "x": 54.47, "y": 78.73 },
+  "ADDIS_ABABA": { "x": 58.5, "y": 64.2 },
+  "ALGIERS": { "x": 49.5, "y": 50.1 },
+  "KINSHASA": { "x": 51.66, "y": 70.26 },
+  "DAKAR": { "x": 42.1, "y": 61.2 },
+  "ACCRA": { "x": 46.1, "y": 62.05 },
+  "NEW_YORK": { "x": 29.52, "y": 47.64 },
+  "LOS_ANGELES": { "x": 18.27, "y": 49.03 },
+  "CHICAGO": { "x": 26.71, "y": 45.75 },
+  "TORONTO": { "x": 28.47, "y": 40.82 },
+  "VANCOUVER": { "x": 16.63, "y": 41.32 },
+  "MEXICO_CITY": { "x": 22.37, "y": 55.98 },
+  "HAVANA": { "x": 30.31, "y": 59.54 },
+  "RIO_DE_JANEIRO": { "x": 36.9, "y": 74.81 },
+  "SAO_PAULO": { "x": 35.14, "y": 78.73 },
+  "BUENOS_AIRES": { "x": 34.62, "y": 82.9 },
+  "SANTIAGO": { "x": 30.93, "y": 86.31 },
+  "LIMA": { "x": 28.99, "y": 71.4 },
+  "SYDNEY": { "x": 82.94, "y": 77.72 },
+  "MELBOURNE": { "x": 80.3, "y": 80.75 },
+  "AUCKLAND": { "x": 87.5, "y": 81.51 }
+};
 
   // 2. 전체 도시 데이터 (56개 전체 및 초성 데이터 포함)
   const ALL_CITIES = [
@@ -134,8 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let cities = [], picked = new Set(), eliminated = new Set(), answerId = null;
-  let step = 0, dragState = null;
-
+  let step = 0;
   let hintState = { continent: false, enLetters: new Set(), koInitials: new Set() };
 
   const toast = (msg) => {
@@ -151,6 +138,50 @@ document.addEventListener("DOMContentLoaded", () => {
     return { x: raw.x * 100, y: raw.y * 100 };
   }
 
+  // --- [추가] 드래그 기능 구현 ---
+  function makeDraggable(el, cityId) {
+    el.style.cursor = "move";
+    el.onmousedown = (e) => {
+      e.preventDefault();
+      const rect = $("mapViewport").getBoundingClientRect();
+      
+      const onMouseMove = (me) => {
+        let xPercent = ((me.clientX - rect.left) / rect.width) * 100;
+        let yPercent = ((me.clientY - rect.top) / rect.height) * 100;
+        
+        // 소수점 2자리까지 고정
+        el.style.left = xPercent.toFixed(2) + "%";
+        el.style.top = yPercent.toFixed(2) + "%";
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    };
+  }
+
+  // --- [추가] 좌표 복사 기능 ---
+  function copyManualLayout() {
+    let output = "let MANUAL_LAYOUTS = {\n";
+    const cityElements = document.querySelectorAll(".city");
+    cityElements.forEach((el, index) => {
+      const id = el.dataset.id;
+      const x = el.style.left.replace("%", "");
+      const y = el.style.top.replace("%", "");
+      output += `  "${id}": { "x": ${x}, "y": ${y} }${index === cityElements.length - 1 ? "" : ","}\n`;
+    });
+    output += "};";
+
+    navigator.clipboard.writeText(output).then(() => {
+      toast("📋 좌표 코드가 복사되었습니다!");
+      console.log(output);
+    });
+  }
+
   function renderCities() {
     const layer = $("citiesLayer");
     layer.innerHTML = "";
@@ -162,7 +193,14 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.left = pos.x + "%"; 
       el.style.top = pos.y + "%";
       el.innerHTML = `<span class="dot" style="width:6px; height:6px; background:#111; border-radius:50%"></span><span class="label" style="font-weight:700; font-size:12px;">${c.ko}</span>`;
-      el.onclick = () => onCityClick(c.id);
+      
+      // 에디트 모드면 드래그 활성화, 아니면 클릭 활성화
+      if (isLayoutEdit) {
+        makeDraggable(el, c.id);
+      } else {
+        el.onclick = () => onCityClick(c.id);
+      }
+      
       layer.appendChild(el);
     });
     applyCityClasses();
@@ -201,9 +239,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderUI() {
-    $("stepBadge").textContent = `STEP ${step}`;
+    $("stepBadge").textContent = isLayoutEdit ? "EDIT MODE" : `STEP ${step}`;
     const body = $("panelBody"), ctrl = $("controls");
     body.innerHTML = ""; ctrl.innerHTML = "";
+
+    // 에디트 모드 전용 레이아웃
+    if (isLayoutEdit && step === 0) {
+        body.innerHTML = "<b>[레이아웃 편집 모드]</b><br>도시를 드래그하여 위치를 잡으세요.";
+        const startBtn = document.createElement("button");
+        startBtn.className = "btn"; startBtn.textContent = "모든 도시 불러오기";
+        startBtn.onclick = () => {
+          cities = ALL_CITIES; // 편집 시에는 모든 도시를 띄움
+          renderCities();
+        };
+        
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "btn secondary"; copyBtn.textContent = "현재 좌표 복사";
+        copyBtn.onclick = copyManualLayout;
+
+        ctrl.appendChild(startBtn);
+        ctrl.appendChild(copyBtn);
+        return;
+    }
 
     if (step === 0) {
       body.innerHTML = `도시 개수: <b id="rangeVal" style="color:var(--primary); font-size:20px;">20</b>개`;
