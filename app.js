@@ -6,19 +6,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const isLayoutEdit = qs.get("layout") === "edit";
 
 let MANUAL_LAYOUTS = {
-  "SEOUL": { "x": 75.55, "y": 49.4 },
-  "TOKYO": { "x": 80.35, "y": 48.69 },
-  "BEIJING": { "x": 72.34, "y": 50.03 },
-  "SHANGHAI": { "x": 73.2, "y": 54.2 },
+  "SEOUL": { "x": 79.3, "y": 49.16 },
+  "TOKYO": { "x": 83.7, "y": 49.41 },
+  "BEIJING": { "x": 74.74, "y": 49.92 },
+  "SHANGHAI": { "x": 75.09, "y": 54.47 },
   "HONG_KONG": { "x": 74.56, "y": 58.76 },
-  "TAIPEI": { "x": 77.55, "y": 55.1 },
+  "TAIPEI": { "x": 80.07, "y": 56.23 },
   "BANGKOK": { "x": 70.11, "y": 64.83 },
-  "SINGAPORE": { "x": 71.09, "y": 71.19 },
-  "JAKARTA": { "x": 73.09, "y": 73.78 },
+  "SINGAPORE": { "x": 74.62, "y": 70.39 },
+  "JAKARTA": { "x": 77.08, "y": 73.93 },
   "HANOI": { "x": 70.16, "y": 59.47 },
   "MANILA": { "x": 74.96, "y": 63.63 },
   "DELHI": { "x": 66.07, "y": 62.93 },
-  "MUMBAI": { "x": 63.84, "y": 59.52 },
+  "MUMBAI": { "x": 64.78, "y": 57.62 },
   "DUBAI": { "x": 59.04, "y": 56.23 },
   "ULAANBAATAR": { "x": 70.5, "y": 44.2 },
   "LONDON": { "x": 45.16, "y": 37.99 },
@@ -27,7 +27,7 @@ let MANUAL_LAYOUTS = {
   "MADRID": { "x": 44.4, "y": 46.5 },
   "ROME": { "x": 50.43, "y": 45.11 },
   "STOCKHOLM": { "x": 49.49, "y": 32.56 },
-  "ISTANBUL": { "x": 55.94, "y": 47.64 },
+  "ISTANBUL": { "x": 55.99, "y": 46.5 },
   "ATHENS": { "x": 52.19, "y": 49.87 },
   "MOSCOW": { "x": 57.2, "y": 34.5 },
   "CAIRO": { "x": 54.71, "y": 54.09 },
@@ -37,7 +37,7 @@ let MANUAL_LAYOUTS = {
   "CAPE_TOWN": { "x": 52.6, "y": 82.9 },
   "JOHANNESBURG": { "x": 54.47, "y": 78.73 },
   "ADDIS_ABABA": { "x": 58.5, "y": 64.2 },
-  "ALGIERS": { "x": 49.67, "y": 53.07 },
+  "ALGIERS": { "x": 49.67, "y": 55.22 },
   "KINSHASA": { "x": 51.66, "y": 70.26 },
   "DAKAR": { "x": 42.1, "y": 61.2 },
   "ACCRA": { "x": 46.1, "y": 62.05 },
@@ -55,9 +55,8 @@ let MANUAL_LAYOUTS = {
   "LIMA": { "x": 28.99, "y": 71.4 },
   "SYDNEY": { "x": 82.94, "y": 77.72 },
   "MELBOURNE": { "x": 80.3, "y": 80.75 },
-  "AUCKLAND": { "x": 87.5, "y": 81.51 }
+  "AUCKLAND": { "x": 90.49, "y": 81.51 }
 };
-
   // 2. 전체 도시 데이터 (56개 전체 및 초성 데이터 포함)
   const ALL_CITIES = [
     // ASIA (15)
