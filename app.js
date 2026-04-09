@@ -6,15 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const isLayoutEdit = qs.get("layout") === "edit";
 
 let MANUAL_LAYOUTS = {
-  "SEOUL": { "x": 79.3, "y": 49.16 },
-  "TOKYO": { "x": 83.7, "y": 49.41 },
-  "BEIJING": { "x": 74.74, "y": 49.92 },
-  "SHANGHAI": { "x": 75.09, "y": 54.47 },
+  "SEOUL": { "x": 80.3, "y": 49.41 },
+  "TOKYO": { "x": 85.16, "y": 49.92 },
+  "BEIJING": { "x": 74.56, "y": 49.92 },
+  "SHANGHAI": { "x": 75.32, "y": 54.09 },
   "HONG_KONG": { "x": 74.56, "y": 58.76 },
   "TAIPEI": { "x": 80.07, "y": 56.23 },
   "BANGKOK": { "x": 70.11, "y": 64.83 },
-  "SINGAPORE": { "x": 74.62, "y": 70.39 },
-  "JAKARTA": { "x": 77.08, "y": 73.93 },
+  "SINGAPORE": { "x": 75.61, "y": 68.62 },
+  "JAKARTA": { "x": 77.96, "y": 72.54 },
   "HANOI": { "x": 70.16, "y": 59.47 },
   "MANILA": { "x": 74.96, "y": 63.63 },
   "DELHI": { "x": 66.07, "y": 62.93 },
@@ -23,7 +23,7 @@ let MANUAL_LAYOUTS = {
   "ULAANBAATAR": { "x": 70.5, "y": 44.2 },
   "LONDON": { "x": 45.16, "y": 37.99 },
   "PARIS": { "x": 47.66, "y": 42 },
-  "BERLIN": { "x": 51.41, "y": 38.94 },
+  "BERLIN": { "x": 52.36, "y": 40.31 },
   "MADRID": { "x": 44.4, "y": 46.5 },
   "ROME": { "x": 50.43, "y": 45.11 },
   "STOCKHOLM": { "x": 49.49, "y": 32.56 },
@@ -39,9 +39,9 @@ let MANUAL_LAYOUTS = {
   "ADDIS_ABABA": { "x": 58.5, "y": 64.2 },
   "ALGIERS": { "x": 49.67, "y": 55.22 },
   "KINSHASA": { "x": 51.66, "y": 70.26 },
-  "DAKAR": { "x": 42.1, "y": 61.2 },
+  "DAKAR": { "x": 42.93, "y": 58.64 },
   "ACCRA": { "x": 46.1, "y": 62.05 },
-  "NEW_YORK": { "x": 29.52, "y": 47.64 },
+  "NEW_YORK": { "x": 29.52, "y": 49.66 },
   "LOS_ANGELES": { "x": 18.27, "y": 49.03 },
   "CHICAGO": { "x": 26.71, "y": 45.75 },
   "TORONTO": { "x": 28.47, "y": 40.82 },
@@ -53,9 +53,9 @@ let MANUAL_LAYOUTS = {
   "BUENOS_AIRES": { "x": 34.62, "y": 82.9 },
   "SANTIAGO": { "x": 30.93, "y": 86.31 },
   "LIMA": { "x": 28.99, "y": 71.4 },
-  "SYDNEY": { "x": 82.94, "y": 77.72 },
-  "MELBOURNE": { "x": 80.3, "y": 80.75 },
-  "AUCKLAND": { "x": 90.49, "y": 81.51 }
+  "SYDNEY": { "x": 85.16, "y": 76.71 },
+  "MELBOURNE": { "x": 81.76, "y": 80.62 },
+  "AUCKLAND": { "x": 91.55, "y": 81.89 }
 };
   // 2. 전체 도시 데이터 (56개 전체 및 초성 데이터 포함)
   const ALL_CITIES = [
