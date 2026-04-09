@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const qs = new URLSearchParams(location.search);
   const isLayoutEdit = qs.get("layout") === "edit";
 
-  // 보정된 수동 위치 (Havana, Mexico City 등)
+  // 보정된 수동 위치
   let MANUAL_LAYOUTS = {
     "HAVANA": { "x": 27.46, "y": 49.22 },
     "MEXICO_CITY": { "x": 24.61, "y": 65.71 },
@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "BUSAN": { "x": 77.03, "y": 58.15 }
   };
 
-  // 2. 전체 도시 데이터 (56개 전체 및 초성 데이터 포함)
   const ALL_CITIES = [
     {"id":"SEOUL","ko":"서울","en":"Seoul","country":"대한민국","continent":"ASIA","lat":37.5665,"lon":126.9780,"koInitials":"ㅅㅇ"},
     {"id":"BUSAN","ko":"부산","en":"Busan","country":"대한민국","continent":"ASIA","lat":35.1796,"lon":129.0756,"koInitials":"ㅂㅅ"},
@@ -74,8 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let cities = [], picked = new Set(), eliminated = new Set(), answerId = null;
-  let step = 0, dragState = null;
-
+  let step = 0;
   let hintState = { continent: false, enLetters: new Set(), koInitials: new Set() };
 
   const toast = (msg) => {
@@ -91,6 +89,50 @@ document.addEventListener("DOMContentLoaded", () => {
     return { x: raw.x * 100, y: raw.y * 100 };
   }
 
+  // --- [추가] 드래그 기능 구현 ---
+  function makeDraggable(el, cityId) {
+    el.style.cursor = "move";
+    el.onmousedown = (e) => {
+      e.preventDefault();
+      const rect = $("mapViewport").getBoundingClientRect();
+      
+      const onMouseMove = (me) => {
+        let xPercent = ((me.clientX - rect.left) / rect.width) * 100;
+        let yPercent = ((me.clientY - rect.top) / rect.height) * 100;
+        
+        // 소수점 2자리까지 고정
+        el.style.left = xPercent.toFixed(2) + "%";
+        el.style.top = yPercent.toFixed(2) + "%";
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    };
+  }
+
+  // --- [추가] 좌표 복사 기능 ---
+  function copyManualLayout() {
+    let output = "let MANUAL_LAYOUTS = {\n";
+    const cityElements = document.querySelectorAll(".city");
+    cityElements.forEach((el, index) => {
+      const id = el.dataset.id;
+      const x = el.style.left.replace("%", "");
+      const y = el.style.top.replace("%", "");
+      output += `  "${id}": { "x": ${x}, "y": ${y} }${index === cityElements.length - 1 ? "" : ","}\n`;
+    });
+    output += "};";
+
+    navigator.clipboard.writeText(output).then(() => {
+      toast("📋 좌표 코드가 복사되었습니다!");
+      console.log(output);
+    });
+  }
+
   function renderCities() {
     const layer = $("citiesLayer");
     layer.innerHTML = "";
@@ -102,7 +144,14 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.left = pos.x + "%"; 
       el.style.top = pos.y + "%";
       el.innerHTML = `<span class="dot" style="width:6px; height:6px; background:#111; border-radius:50%"></span><span class="label" style="font-weight:700; font-size:12px;">${c.ko}</span>`;
-      el.onclick = () => onCityClick(c.id);
+      
+      // 에디트 모드면 드래그 활성화, 아니면 클릭 활성화
+      if (isLayoutEdit) {
+        makeDraggable(el, c.id);
+      } else {
+        el.onclick = () => onCityClick(c.id);
+      }
+      
       layer.appendChild(el);
     });
     applyCityClasses();
@@ -141,9 +190,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderUI() {
-    $("stepBadge").textContent = `STEP ${step}`;
+    $("stepBadge").textContent = isLayoutEdit ? "EDIT MODE" : `STEP ${step}`;
     const body = $("panelBody"), ctrl = $("controls");
     body.innerHTML = ""; ctrl.innerHTML = "";
+
+    // 에디트 모드 전용 레이아웃
+    if (isLayoutEdit && step === 0) {
+        body.innerHTML = "<b>[레이아웃 편집 모드]</b><br>도시를 드래그하여 위치를 잡으세요.";
+        const startBtn = document.createElement("button");
+        startBtn.className = "btn"; startBtn.textContent = "모든 도시 불러오기";
+        startBtn.onclick = () => {
+          cities = ALL_CITIES; // 편집 시에는 모든 도시를 띄움
+          renderCities();
+        };
+        
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "btn secondary"; copyBtn.textContent = "현재 좌표 복사";
+        copyBtn.onclick = copyManualLayout;
+
+        ctrl.appendChild(startBtn);
+        ctrl.appendChild(copyBtn);
+        return;
+    }
 
     if (step === 0) {
       body.innerHTML = `도시 개수: <b id="rangeVal" style="color:var(--primary); font-size:20px;">20</b>개`;
